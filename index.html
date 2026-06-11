@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>즐거운 과학 시간</title>
+<style>
+:root{
+  --g:#1D9E75;--gl:#E1F5EE;--gm:#9FE1CB;--gd:#0F6E56;
+  --b:#185FA5;--bl:#E6F1FB;--bd:#0C447C;
+  --gray:#f7f7f4;--border:#e2e2d8;--text:#1a1a18;--muted:#6b6b65;
+  --red:#E24B4A;--amb:#EF9F27;--r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(--gray);color:var(--text);min-height:100vh}
+
+/* OVERLAYS */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;display:flex;align-items:center;justify-content:center}
+.ov-box{background:#fff;border-radius:var(--r);padding:2rem;max-width:440px;width:92%}
+.ov-box h2{font-size:18px;font-weight:700;margin-bottom:6px}
+.ov-box p{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px}
+.ov-box input[type=password]{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:10px}
+.ov-box input[type=password]:focus{outline:none;border-color:var(--g)}
+.ov-btn{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.ov-btn:hover{background:var(--gd)}
+.ov-btn.secondary{background:#fff;border:1.5px solid var(--border);color:var(--muted);margin-top:8px}
+.ov-btn.secondary:hover{border-color:var(--g);color:var(--g)}
+.ov-note{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6}
+.err-msg{font-size:12px;color:var(--red);margin-bottom:8px;display:none}
+
+/* TEACHER DASHBOARD */
+.dash-box{background:#fff;border-radius:var(--r);padding:1.75rem;max-width:680px;width:95%;max-height:90vh;overflow-y:auto}
+.dash-box h3{font-size:17px;font-weight:700;margin-bottom:16px}
+.dash-tabs{display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px}
+.dash-tab{padding:7px 14px;border:none;background:none;font-size:13px;color:var(--muted);cursor:pointer;border-radius:6px;font-family:inherit}
+.dash-tab.on{background:var(--gl);color:var(--gd);font-weight:600}
+.tab-content{display:none}
+.tab-content.on{display:block}
+.t-row2{display:flex;gap:8px;margin-bottom:1rem}
+.t-btn{flex:1;padding:12px 8px;border:1.5px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s;text-align:center;line-height:1.5}
+.t-btn.on{border-color:var(--g);background:var(--gl);color:var(--gd);font-weight:600}
+.t-slabel{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.4px;margin-bottom:6px;display:block;margin-top:12px}
+.log-table-wrap{overflow-x:auto;max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f0f0ea;padding:8px 10px;text-align:left;position:sticky;top:0;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top;max-width:220px;word-break:break-word}
+tr:last-child td{border-bottom:none}
+.tag-exp{background:var(--gl);color:var(--gd);padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;white-space:nowrap}
+.tag-ctrl{background:var(--bl);color:var(--bd);padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;white-space:nowrap}
+.tag-user{background:#f0f0ea;color:#555;padding:1px 6px;border-radius:4px;font-size:10px}
+.tag-ai{background:#e8e8ff;color:#444;padding:1px 6px;border-radius:4px;font-size:10px}
+.exp-btn{padding:9px 16px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-right:8px}
+.exp-btn:hover{background:var(--gd)}
+.exp-btn.red{background:var(--red)}
+.exp-btn.red:hover{background:#b03030}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.stat-card{background:var(--gray);border-radius:8px;padding:12px;text-align:center}
+.stat-num{font-size:24px;font-weight:800;color:var(--g)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+.filter-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.filter-row select,.filter-row input{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;font-family:inherit;flex:1;min-width:100px}
+.empty-state{text-align:center;padding:2rem;color:var(--muted);font-size:13px}
+
+/* MAIN APP */
+.app{max-width:680px;margin:0 auto;padding:1rem}
+.hdr{text-align:center;padding:1.75rem 0 1rem}
+.hdr h1{font-size:24px;font-weight:800}
+.hdr p{font-size:13px;color:var(--muted);margin-top:5px}
+
+/* SETUP */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:1rem}
+.slabel{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.4px;margin-bottom:8px;display:block}
+.grade-row{display:flex;gap:8px;margin-bottom:1rem}
+.grade-btn{flex:1;padding:14px 8px;border:2px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;font-family:inherit;transition:all .15s;text-align:center}
+.grade-btn .gnum{font-size:22px;font-weight:800;display:block;margin-bottom:3px}
+.grade-btn .gsub{font-size:11px;color:var(--muted)}
+.grade-btn.on{border-color:var(--g);background:var(--gl)}
+.grade-btn.on .gnum{color:var(--gd)}
+.grade-btn.on .gsub{color:var(--g)}
+select{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;background:#fff;margin-bottom:1rem;font-family:inherit;color:var(--text)}
+select:focus{outline:none;border-color:var(--g)}
+input[type=text]{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;background:#fff;margin-bottom:1.25rem;font-family:inherit;color:var(--text)}
+input[type=text]:focus{outline:none;border-color:var(--g)}
+
+/* TWO MODE BUTTONS */
+.mode-row{display:flex;gap:10px;margin-bottom:8px}
+.mode-btn{flex:1;padding:16px 12px;border:2px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;font-family:inherit;transition:all .2s;text-align:center}
+.mode-btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.mode-btn .ico{font-size:28px;margin-bottom:8px;display:block}
+.mode-btn .mt{font-size:14px;font-weight:700;display:block;margin-bottom:5px;line-height:1.4}
+.mode-btn .ms{font-size:11px;color:var(--muted);line-height:1.5;display:block}
+.mode-btn.green{border-color:var(--gm);background:var(--gl)}
+.mode-btn.green .mt{color:var(--gd)}
+.mode-btn.green:hover{border-color:var(--g);background:#d4f0e6}
+.mode-btn.blue{border-color:#b5d4f4;background:var(--bl)}
+.mode-btn.blue .mt{color:var(--bd)}
+.mode-btn.blue:hover{border-color:var(--b);background:#d8eaf8}
+.teacher-link{text-align:center;margin-top:14px;font-size:11px;color:#ccc;cursor:pointer;user-select:none}
+.teacher-link:hover{color:var(--muted)}
+
+/* CHAT */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 110px);min-height:520px}
+.chat-hdr{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:8px;flex-shrink:0}
+
+/* 단계 안내 배너 */
+.step-guide{border-radius:10px;padding:10px 14px;margin-bottom:8px;flex-shrink:0}
+.step-guide-exp{background:linear-gradient(135deg,#e8f5e9 0%,#f1faf2 100%);border:1.5px solid var(--gm)}
+.step-guide-ctrl{background:linear-gradient(135deg,#e3f0ff 0%,#f0f6ff 100%);border:1.5px solid #b5d4f4}
+.sg-title{font-size:12px;font-weight:700;margin-bottom:8px;color:var(--gd)}
+.step-guide-ctrl .sg-title{color:var(--bd)}
+.sg-steps{display:flex;align-items:center;gap:4px}
+.sg-step{flex:1;background:#fff;border-radius:8px;padding:8px 6px;display:flex;align-items:flex-start;gap:6px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.sg-num{width:20px;height:20px;border-radius:50%;background:var(--g);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-guide-ctrl .sg-num{background:var(--b)}
+.sg-label{font-size:11px;font-weight:700;color:var(--gd);margin-bottom:2px}
+.step-guide-ctrl .sg-label{color:var(--bd)}
+.sg-desc{font-size:10px;color:var(--muted);line-height:1.5}
+.sg-arrow{font-size:14px;color:#ccc;flex-shrink:0;padding:0 1px}
+.ch-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.ch-info{font-size:12px;color:var(--muted)}
+.steps-row{display:flex;gap:4px;margin-bottom:6px}
+.sp{flex:1;text-align:center;padding:5px 2px;border-radius:6px;font-size:10px;background:var(--gray);border:1px solid var(--border);line-height:1.4}
+.sp.done{background:var(--gl);border-color:var(--gm);color:var(--gd)}
+.sp.active{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.pbar{height:4px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:4px}
+.pfill{height:100%;border-radius:99px;transition:width 1s linear}
+
+/* MESSAGES */
+.msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px 0}
+.mai{display:flex;gap:8px;align-items:flex-start}
+.aico{width:30px;height:30px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px}
+.bai{background:#fff;border:1px solid var(--border);border-radius:4px 14px 14px 14px;padding:10px 14px;font-size:14px;line-height:1.7;max-width:82%}
+.muser{display:flex;justify-content:flex-end}
+.buser{background:var(--g);color:#fff;border-radius:14px 14px 4px 14px;padding:10px 14px;font-size:14px;line-height:1.7;max-width:82%}
+.typing{display:flex;gap:4px;align-items:center;padding:2px 0}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--gm);animation:bnc 1.2s infinite;display:inline-block}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bnc{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.done-banner{background:var(--gl);border:1px solid var(--gm);border-radius:10px;padding:14px 16px;text-align:center;margin-top:4px}
+.done-banner h3{font-size:15px;color:var(--gd);margin-bottom:4px}
+.done-banner p{font-size:12px;color:var(--g);margin-bottom:10px}
+.nbtn{background:var(--g);color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.nbtn:hover{background:var(--gd)}
+
+/* INPUT */
+.inp-area{flex-shrink:0;margin-top:8px}
+.inp-row{display:flex;gap:8px}
+.inp-row input[type=text]{flex:1;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text);margin-bottom:0}
+.inp-row input[type=text]:focus{outline:none;border-color:var(--g)}
+.sbtn{padding:12px 18px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:inherit}
+.sbtn:disabled{background:var(--border);color:var(--muted);cursor:default}
+.skip-btn{padding:11px 12px;background:#fff;border:1.5px solid var(--border);color:var(--muted);border-radius:10px;font-size:12px;cursor:pointer;flex-shrink:0;font-family:inherit}
+.skip-btn:hover{border-color:var(--g);color:var(--g)}
+
+/* DONE */
+.fin{text-align:center;padding:3rem 1rem}
+.fin-ico{font-size:56px;margin-bottom:16px}
+.fin h2{font-size:22px;font-weight:800;margin-bottom:8px}
+.fin p{color:var(--muted);font-size:14px;margin-bottom:22px;line-height:1.7}
+.rst-btn{padding:12px 28px;background:#fff;border:1.5px solid var(--border);border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit}
+.rst-btn:hover{border-color:var(--g);color:var(--g)}
+.akey-link{font-size:12px;color:var(--muted);margin-top:12px;cursor:pointer;text-decoration:underline;display:inline-block}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- API KEY OVERLAY -->
+<div class="overlay" id="key-ov" style="display:none">
+  <div class="ov-box">
+    <h2>🔑 API 키 입력</h2>
+    <p>Claude AI와 연결하기 위해 API 키가 필요합니다.<br>
+    한 번 입력하면 이 브라우저에 저장되어 다음에는 입력하지 않아도 됩니다.</p>
+    <input type="password" id="api-key-inp" placeholder="sk-ant-api03-..." />
+    <button class="ov-btn" onclick="confirmKey()">시작하기 →</button>
+    <p class="ov-note">* <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>에서 발급받을 수 있습니다.</p>
+  </div>
+</div>
+
+<!-- TEACHER DASHBOARD OVERLAY -->
+<div class="overlay" id="teacher-ov" style="display:none">
+  <div class="dash-box">
+    <div id="teacher-pin-area">
+      <h3>🔒 교사 전용 패널</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">연구자 비밀번호를 입력하세요.</p>
+      <input type="password" id="pin-inp" placeholder="비밀번호" maxlength="8" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:8px"/>
+      <p class="err-msg" id="pin-err">비밀번호가 틀렸습니다.</p>
+      <button class="ov-btn" onclick="checkPin()">확인</button>
+      <button class="ov-btn secondary" onclick="closeTeacher()">닫기</button>
+    </div>
+    <div id="teacher-content" style="display:none">
+      <h3>⚙️ 연구자 대시보드</h3>
+      <div class="dash-tabs">
+        <button class="dash-tab on" onclick="switchTab('tab-settings')">설정</button>
+        <button class="dash-tab" onclick="switchTab('tab-logs')">대화 기록</button>
+        <button class="dash-tab" onclick="switchTab('tab-stats')">통계</button>
+        <button class="dash-tab" onclick="switchTab('tab-fidelity')">이행 충실도</button>
+        <button class="dash-tab" onclick="switchTab('tab-coding')">질적 코딩</button>
+      </div>
+
+      <!-- TAB: SETTINGS -->
+      <div class="tab-content on" id="tab-settings">
+        <span class="t-slabel" style="margin-top:0">활동 유형 (교사 사전 설정)</span>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">학생이 두 버튼으로 직접 선택합니다. 이 설정은 기록 분류 기준으로 사용됩니다.</p>
+        <div class="t-row2">
+          <button class="t-btn" id="mode-a-btn" onclick="setDefaultMode('experiment')">
+            유형 A — 실험집단<br><span style="font-size:10px;opacity:.7">S1경청→S2소크라테스→S3추가설명</span>
+          </button>
+          <button class="t-btn" id="mode-b-btn" onclick="setDefaultMode('control')">
+            유형 B — 통제집단<br><span style="font-size:10px;opacity:.7">Q1질문형성정교화→Q2답변핵심표지→Q3탐색질문확장</span>
+          </button>
+        </div>
+
+        <div style="background:#f8f4e8;border:1px solid #e8d8a0;border-radius:8px;padding:14px;margin-top:4px">
+          <div style="font-size:13px;font-weight:700;color:#8a6a00;margin-bottom:8px">📋 이행 충실도(처치 충실도) 측정 방법</div>
+          <div style="font-size:12px;color:#5a4a00;line-height:1.8">
+            <b>단계 자동 추적 방식:</b> 학생 발화 누적 수로 STEP을 추정해 로그에 태깅합니다.<br>
+            &nbsp;&nbsp;• 1~3번째 발화 → STEP 1 태깅<br>
+            &nbsp;&nbsp;• 4~7번째 발화 → STEP 2 태깅<br>
+            &nbsp;&nbsp;• 8번째~ 발화 → STEP 3 태깅<br>
+            <br>
+            <b>⚠ 중요 — 사후 내용 분석 병행 필요:</b><br>
+            단계 태깅은 시간 기반 추정이므로 실제 대화 흐름과 다를 수 있습니다.<br>
+            연구 종료 후 Excel 로그에서 아래 기준으로 <b>사후 내용 분석</b>을 권장합니다:<br>
+            <br>
+            <b>[실험집단 이행 기준]</b><br>
+            &nbsp;&nbsp;• STEP 1 확인: 학생이 3문장 이상 자유 설명 발화 포함 여부<br>
+            &nbsp;&nbsp;• STEP 2 확인: AI 발화에 "?" 포함 + 학생 추가 설명 반응 여부<br>
+            &nbsp;&nbsp;• STEP 3 확인: 학생이 STEP 2 질문 대상 개념을 재설명했는지 여부<br>
+            <br>
+            <b>[통제집단 이행 기준]</b><br>
+            &nbsp;&nbsp;• Q1 확인: 학생이 질문 입력 후 AI의 명료화 되묻기에 대해 정교화된 질문을 재입력했는지 여부<br>
+            &nbsp;&nbsp;• Q2 확인: 학생이 AI 답변에서 핵심 키워드 또는 짧은 문장을 발췌·표지하여 입력했는지 여부<br>
+            &nbsp;&nbsp;• Q3 확인: 학생이 후속 질문을 수업 범위 내에서 2회 이상 추가로 입력(정보망 확장)했는지 여부<br>
+            <br>
+            Excel 시트2(차시별요약)의 STEP별 발화 수를 1차 스크리닝 지표로 활용하세요.
+          </div>
+        </div>
+
+        <span class="t-slabel" style="margin-top:16px">연구자 PIN 변경</span>
+        <input type="password" id="new-pin" placeholder="새 비밀번호 (4~8자리)" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:8px"/>
+        <button class="ov-btn" style="font-size:13px;padding:10px" onclick="changePin()">PIN 변경</button>
+
+        <!-- Google Sheets 연동 섹션 -->
+        <div style="margin-top:18px;background:#f0faf5;border:1.5px solid var(--gm);border-radius:10px;padding:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:6px">📊 Google Sheets 자동 전송 연동</div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7">
+            학생이 활동을 마칠 때마다 대화 로그가 <b>연구자의 구글 스프레드시트</b>에 자동으로 저장됩니다.<br>
+            아래에 Google Apps Script 웹앱 URL을 입력하면 즉시 연동됩니다.
+          </p>
+          <input type="text" id="gas-url-inp"
+            placeholder="https://script.google.com/macros/s/..."
+            style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;margin-bottom:8px;color:var(--text)"
+            value="" />
+          <div style="display:flex;gap:8px">
+            <button class="ov-btn" style="font-size:13px;padding:9px" onclick="saveGasUrl()">URL 저장</button>
+            <button class="ov-btn secondary" style="font-size:13px;padding:9px;margin-top:0" onclick="testGasUrl()">연결 테스트</button>
+            <button class="ov-btn secondary" style="font-size:13px;padding:9px;margin-top:0;color:var(--red);border-color:var(--red)" onclick="clearGasUrl()">연동 해제</button>
+          </div>
+          <div id="gas-status" style="margin-top:8px;font-size:12px;display:none"></div>
+          <details style="margin-top:12px">
+            <summary style="font-size:12px;color:var(--muted);cursor:pointer;font-weight:600">🔧 Google Apps Script 설정 방법 보기</summary>
+            <div style="font-size:11px;color:#444;line-height:1.9;margin-top:8px;background:#fff;border-radius:6px;padding:10px;border:1px solid var(--border)">
+              <b>1단계.</b> <a href="https://script.google.com" target="_blank" style="color:var(--b)">script.google.com</a> 접속 → 새 프로젝트 생성<br>
+              <b>2단계.</b> 편집창에 아래 코드 전체를 붙여넣기<br>
+              <div style="background:#f5f5f5;border-radius:4px;padding:8px;margin:6px 0;font-family:monospace;font-size:10px;line-height:1.6;white-space:pre-wrap">// =====================================================
+// API 키·Sheet ID는 코드에 직접 쓰지 않습니다.
+// GAS 편집기 → 프로젝트 설정 → 스크립트 속성에서
+// 아래 두 키를 추가하세요:
+//   ANTHROPIC_API_KEY  →  sk-ant-api03-...
+//   SHEET_ID           →  스프레드시트 ID
+// =====================================================
+const SHEET_NAME = '대화로그';
+
+// =====================================================
+// doPost: Claude API 프록시 + 로그 저장 통합
+// =====================================================
+function doPost(e) {
+  try {
+    const props   = PropertiesService.getScriptProperties();
+    const API_KEY = props.getProperty('ANTHROPIC_API_KEY');
+    const SHEET_ID = props.getProperty('SHEET_ID');
+
+    if (!API_KEY) throw new Error('API 키가 설정되지 않았습니다. setSecrets()를 먼저 실행하세요.');
+
+    const raw  = e.parameter.payload || e.parameter.data
+               || (e.postData && e.postData.contents) || '{}';
+    const body = JSON.parse(raw);
+    const action = e.parameter.action || body.action || 'chat';
+
+    // [1] chat: Claude API 프록시
+    if (action === 'chat') {
+      const apiResp = UrlFetchApp.fetch(
+        'https://api.anthropic.com/v1/messages',
+        {
+          method: 'post',
+          contentType: 'application/json',
+          headers: {
+            'x-api-key': API_KEY,
+            'anthropic-version': '2023-06-01'
+          },
+          payload: JSON.stringify({
+            model:      body.model      || 'claude-sonnet-4-20250514',
+            max_tokens: body.max_tokens || 600,
+            system:     body.system     || '',
+            messages:   body.messages   || []
+          }),
+          muteHttpExceptions: true
+        }
+      );
+      const result = JSON.parse(apiResp.getContentText());
+      return ContentService
+        .createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // [2] logs: 대화 로그 저장
+    if (action === 'logs') {
+      const ss = SpreadsheetApp.openById(SHEET_ID);
+      let sheet = ss.getSheetByName(SHEET_NAME);
+      if (!sheet) {
+        sheet = ss.insertSheet(SHEET_NAME);
+        sheet.appendRow(['세션ID','타임스탬프','학생ID','학년',
+          '차시번호','차시명','유형','단계번호','단계명','발화자','내용']);
+      }
+      const rows = body.logs || [];
+      rows.forEach(r => sheet.appendRow([
+        r.session_id, r.timestamp, r.student_id, r.grade,
+        r.lesson_id, r.lesson_title, r.mode_label,
+        r.step, r.step_label, (r.role === 'assistant' ? 'AI' : r.role === 'user' ? '학생' : r.role), r.content
+      ]));
+      return ContentService
+        .createTextOutput(JSON.stringify({status:'ok', count: rows.length}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ok:false, error:'알 수 없는 action: ' + action}))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ok:false, error: err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var secret = props.getProperty('READ_KEY'); // 설정 시에만 잠금 적용
+    if (secret && String((e && e.parameter && e.parameter.key) || '') !== secret) {
+      return ContentService.createTextOutput(JSON.stringify({ok:false, error:'unauthorized'})).setMimeType(ContentService.MimeType.JSON);
+    }
+    var ss = SpreadsheetApp.openById(props.getProperty('SHEET_ID'));
+    var sh = ss.getSheetByName(SHEET_NAME);
+    if (!sh) return ContentService.createTextOutput('[]').setMimeType(ContentService.MimeType.JSON);
+    var values = sh.getDataRange().getValues();
+    var head = values.shift() || [];
+    var rows = values.map(function(r){ var o={}; head.forEach(function(h,i){ o[h]=r[i]; }); return o; });
+    return ContentService.createTextOutput(JSON.stringify(rows)).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ok:false, error: err.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
+}</div>
+              <b>3단계.</b> 왼쪽 메뉴 ⚙️ 프로젝트 설정 → 하단 <b>스크립트 속성</b> → 속성 추가<br>
+              &nbsp;&nbsp;&nbsp;• 속성: <b>ANTHROPIC_API_KEY</b> / 값: API 키 (sk-ant-api03-...)<br>
+              &nbsp;&nbsp;&nbsp;• 속성: <b>SHEET_ID</b> / 값: 스프레드시트 URL의 긴 ID<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예: docs.google.com/spreadsheets/d/<b style="color:var(--red)">여기가_ID</b>/edit<br>
+              <b>4단계.</b> 상단 메뉴 → 배포 → 새 배포 → 유형: 웹앱<br>
+              <b>5단계.</b> '다음 사용자로 실행' = <b>나(내 계정)</b>, '액세스 권한' = <b>모든 사용자</b><br>
+              <b>6단계.</b> 배포 후 생성된 URL을 위 입력창에 붙여넣기
+            </div>
+          </details>
+        </div>
+
+        <!-- 전체 데이터 불러오기 (중앙 집계) -->
+        <div style="margin-top:14px;background:#eef4ff;border:1.5px solid #b9d2f5;border-radius:10px;padding:14px">
+          <div style="font-size:13px;font-weight:700;color:#0c3b6b;margin-bottom:6px">🖥️ 전체 학생 데이터 불러오기 (중앙 집계)</div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7">
+            이 컴퓨터에서 <b>모든 아이패드의 기록</b>을 한 번에 불러옵니다. 불러온 뒤에는 대화 기록·통계·이행충실도·질적 코딩·엑셀 내보내기를 <b>전원 대상</b>으로 실행할 수 있습니다.<br>
+            아래에 <b>읽기 전용 Apps Script URL</b>을 입력하세요. (전송용 URL과 별개 — 설정 방법은 아래 참고)
+          </p>
+          <input type="text" id="read-url-inp"
+            placeholder="https://script.google.com/macros/s/..."
+            style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;margin-bottom:8px;color:var(--text)"
+            value="" />
+          <input type="text" id="read-key-inp"
+            placeholder="읽기 비밀키 (스크립트의 SECRET과 동일하게)"
+            style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;margin-bottom:8px;color:var(--text)"
+            value="" />
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="ov-btn" style="font-size:13px;padding:9px" onclick="saveReadUrl()">URL·키 저장</button>
+            <button class="ov-btn" style="font-size:13px;padding:9px;background:#0c3b6b" onclick="loadAllFromSheet()">⬇ 전체 불러오기</button>
+          </div>
+          <div id="read-status" style="margin-top:8px;font-size:12px;display:none"></div>
+          <details style="margin-top:12px">
+            <summary style="font-size:12px;color:var(--muted);cursor:pointer;font-weight:600">🔧 읽기 스크립트 설정 방법 보기</summary>
+            <div style="font-size:11px;color:#444;line-height:1.9;margin-top:8px;background:#fff;border-radius:6px;padding:10px;border:1px solid var(--border)">
+              로그가 쌓이는 <b>같은 스프레드시트</b>에 읽기 전용 웹앱을 따로 배포합니다.<br>
+              <b>1단계.</b> 그 스프레드시트에서 확장 프로그램 → Apps Script → 새 프로젝트<br>
+              <b>2단계.</b> 아래 코드를 붙여넣고 <b>SECRET</b>(비밀키)만 본인 값으로 바꾸세요. 이 SECRET을 위 [읽기 비밀키] 칸에도 똑같이 입력합니다. (이 스프레드시트에서 직접 만들었으므로 시트 ID는 필요 없습니다.):<br>
+              <code style="display:block;white-space:pre-wrap;background:#f6f8fa;border-radius:5px;padding:8px;margin:6px 0;font-size:10px;color:#1b5e20">function doGet(e){
+  var SECRET = '여기에_비밀키';   // 앱의 [읽기 비밀키]와 동일
+  if (String((e && e.parameter && e.parameter.key) || '') !== SECRET) {
+    return ContentService.createTextOutput(JSON.stringify({ok:false, error:'unauthorized'}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('대화로그');
+  if (!sh) return ContentService.createTextOutput('[]').setMimeType(ContentService.MimeType.JSON);
+  var v = sh.getDataRange().getValues();
+  var head = v.shift() || [];
+  var rows = v.map(function(r){ var o={}; head.forEach(function(h,i){ o[h]=r[i]; }); return o; });
+  return ContentService.createTextOutput(JSON.stringify(rows))
+    .setMimeType(ContentService.MimeType.JSON);
+}</code>
+              <b>3단계.</b> 배포 → 새 배포 → 유형: 웹앱 → 실행: <b>나</b>, 액세스: <b>모든 사용자</b><br>
+              <b>4단계.</b> 생성된 URL을 위 입력창에 붙여넣고 [전체 불러오기]<br>
+              ※ 전송도 Apps Script로 하는 경우, 그 스크립트의 doGet이 이미 읽기를 지원하므로 같은 URL을 넣으면 됩니다.
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- TAB: LOGS -->
+      <div class="tab-content" id="tab-logs">
+        <div class="filter-row">
+          <select id="filter-grade" onchange="renderLogs()">
+            <option value="">전체 학년</option>
+            <option value="5">5학년</option>
+            <option value="6">6학년</option>
+          </select>
+          <select id="filter-mode" onchange="renderLogs()">
+            <option value="">전체 유형</option>
+            <option value="experiment">유형 A (실험집단)</option>
+            <option value="control">유형 B (통제집단)</option>
+          </select>
+          <select id="filter-lesson" onchange="renderLogs()">
+            <option value="">전체 차시</option>
+            <option value="1">1차시</option><option value="2">2차시</option>
+            <option value="3">3차시</option><option value="4">4차시</option>
+            <option value="5">5차시</option><option value="6">6차시</option>
+            <option value="7">7차시</option><option value="8">8차시</option>
+          </select>
+          <input type="text" id="filter-name" placeholder="학생 ID 검색" oninput="renderLogs()" style="margin-bottom:0"/>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <button class="exp-btn" onclick="exportXLSX()">📊 Excel(.xlsx) 내보내기</button>
+          <button class="exp-btn" onclick="exportCSV()">📥 CSV 내보내기</button>
+          <button class="exp-btn" onclick="exportJSON()">📥 JSON 내보내기</button>
+          <button class="exp-btn red" onclick="clearLogs()">🗑 기록 전체 삭제</button>
+        </div>
+        <div class="log-table-wrap" id="log-table-area"><div class="empty-state">대화 기록이 없습니다.</div></div>
+      </div>
+
+      <!-- TAB: STATS -->
+      <div class="tab-content" id="tab-stats">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div id="stats-detail" style="font-size:13px;color:var(--muted)"></div>
+      </div>
+
+      <!-- TAB: 이행 충실도 (Claude API 자동 분석) -->
+      <div class="tab-content" id="tab-fidelity">
+
+        <!-- 안내 -->
+        <div style="background:#e8f4ff;border:1px solid #b0d4f4;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:13px;line-height:1.75">
+          <strong>🤖 Claude API 자동 분석</strong><br>
+          세션이 끝난 대화 전체를 Claude에게 보내 각 단계(STEP) 충족 여부를 자동 판정합니다.<br>
+          결과: 각 STEP <b>충족(✅) / 미충족(❌)</b> + 근거 발화 인용 + 차시별 충실도 점수(%)
+        </div>
+
+        <!-- 분석 실행 영역 -->
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+          <select id="fi-filter-grade" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:inherit">
+            <option value="">전체 학년</option>
+            <option value="5">5학년</option>
+            <option value="6">6학년</option>
+          </select>
+          <select id="fi-filter-mode" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:inherit">
+            <option value="">전체 유형</option>
+            <option value="experiment">유형A (실험집단)</option>
+            <option value="control">유형B (통제집단)</option>
+          </select>
+          <select id="fi-filter-lesson" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:inherit">
+            <option value="">전체 차시</option>
+            <option value="1">1차시</option><option value="2">2차시</option>
+            <option value="3">3차시</option><option value="4">4차시</option>
+            <option value="5">5차시</option><option value="6">6차시</option>
+            <option value="7">7차시</option><option value="8">8차시</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <button class="exp-btn" id="fi-run-btn" onclick="runFidelityAnalysis()">🔍 선택 세션 자동 분석 실행</button>
+          <button class="exp-btn" onclick="exportFidelityXLSX()">📊 결과 Excel 내보내기</button>
+          <button class="exp-btn red" onclick="clearFidelityResults()">🗑 분석 결과 초기화</button>
+        </div>
+
+        <!-- 진행 상태 -->
+        <div id="fi-progress" style="display:none;background:#f0f8f0;border:1px solid var(--gm);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--gd)"></div>
+
+        <!-- 결과 표 -->
+        <div id="fi-result-area">
+          <div class="empty-state">분석 결과가 없습니다. 위 버튼으로 자동 분석을 실행하세요.</div>
+        </div>
+
+        <!-- 판정 기준 요약 (접기/펼치기) -->
+        <details style="margin-top:14px;font-size:12px">
+          <summary style="cursor:pointer;color:var(--muted);font-weight:600;margin-bottom:6px">📋 Claude 판정 기준 보기</summary>
+          <div style="background:var(--gray);border-radius:8px;padding:12px;line-height:1.75;margin-top:6px">
+            <b>[실험집단]</b><br>
+            S1 자유 설명: 학생이 세션 초반에 배운 내용을 자발적으로 설명한 발화가 존재하는가<br>
+            S2 AI 확인 질문: AI가 학생 설명의 오류·누락에 대해 소크라테스식 질문을 한 발화가 존재하는가<br>
+            S3 추가 설명: AI 질문 이후 학생이 해당 개념을 추가로 설명한 발화가 존재하는가<br><br>
+            <b>[통제집단]</b><br>
+            Q1 질문 형성·정교화: 학생이 AI의 명료화 되묻기에 응해 정교화된 질문을 재입력한 발화가 존재하는가<br>
+            Q2 답변 탐색·핵심 표지: 학생이 AI 답변에서 핵심 키워드 또는 짧은 문장을 발췌·표지하여 입력한 발화가 존재하는가<br>
+            Q3 탐색적 질문 확장: 학생이 수업 범위 내 후속 질문을 2회 이상 추가 입력한 발화가 존재하는가
+          </div>
+        </details>
+      </div>
+
+      <!-- TAB: 질적 코딩 -->
+      <div class="tab-content" id="tab-coding">
+        <div style="background:#e8f4ff;border:1px solid #b0d4f4;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:13px;line-height:1.75">
+          <strong>🔬 실험집단 발화 자동 코딩</strong><br>
+          Roscoe &amp; Chi(2007, 2008) 수정 프레임워크 — KT / KB / GE 3범주<br>
+          세션 완료 시 자동 실행됩니다. 기존 세션은 아래 버튼으로 일괄 코딩하세요.
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <button class="exp-btn" id="coding-run-btn" onclick="runBatchCoding()">🔍 기존 세션 일괄 코딩 실행</button>
+          <button class="exp-btn red" onclick="clearCodingResults()">🗑 코딩 결과 초기화</button>
+        </div>
+        <div id="coding-progress" style="display:none;background:#f0f8f0;border:1px solid var(--gm);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--gd)"></div>
+        <div id="coding-result-area">
+          <div class="empty-state">코딩 결과가 없습니다. 위 버튼으로 실행하거나, 학생 활동 완료 시 자동 코딩됩니다.</div>
+        </div>
+      </div>
+
+      <button class="ov-btn secondary" onclick="closeTeacher()" style="margin-top:16px">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app">
+  <div class="hdr">
+    <h1>🔬 즐거운 과학 시간</h1>
+    <p>2022 개정 초등 아이스크림 과학 교과서</p>
+  </div>
+  <div id="screen"></div>
+</div>
+
+<script>
+// ============================================================
+// CONSTANTS & STORAGE KEY
+// ============================================================
+const LOG_KEY       = 'ai_study_logs_v2';
+const PIN_KEY       = 'teacher_pin_v2';
+const DEFAULT_PIN   = '1234';
+const FIDELITY_KEY  = 'ai_fidelity_results_v1';
+const CODING_KEY    = 'ai_coding_results_v1';
+const GAS_URL_KEY   = 'gas_webhook_url_v1'; // Google Apps Script 웹앱 URL
+const DATA_READ_URL_KEY = 'ai_data_read_url_v1'; // 전체 불러오기(읽기 전용) Apps Script URL
+const READ_KEY_KEY      = 'ai_data_read_key_v1'; // 읽기 비밀키
+
+// ── 한국 시간(KST, UTC+9) 유틸리티 ──────────────────────────────────
+// toISOString()은 항상 UTC 기준 → 한국 시간과 9시간 차이
+// 모든 타임스탬프·파일명·분석 시각에 아래 함수를 사용한다
+function kstNow(){
+  // KST = UTC + 9시간
+  const d = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  return d.toISOString().replace('Z', '+09:00');
+}
+function kstLabel(d){
+  // Date 객체 또는 ISO 문자열을 받아 KST 기준 읽기 좋은 문자열로 변환
+  const dt = (d instanceof Date) ? d : new Date(d);
+  return dt.toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false
+  });
+}
+function kstFileDate(){
+  // 파일명용 날짜: YYYYMMDD (KST 기준)
+  const d = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  return d.toISOString().slice(0,10).replace(/-/g,'');
+}
+
+function getPin(){ return localStorage.getItem(PIN_KEY) || DEFAULT_PIN; }
+
+// ============================================================
+// LESSON DATA
+// ============================================================
+const GRADES = {
+"5":{
+  subject:"우리 몸의 구조와 기능",
+  lessons:[
+    {id:1,title:"인체 골격 모형과 뼈의 종류",pages:"86~89쪽",
+     concepts:["뼈는 몸의 형태를 만들고 몸을 지탱하며, 심장·폐·뇌 등 몸속 기관을 보호함","우리 몸에는 머리뼈·목뼈·갈비뼈·척추뼈·팔뼈·다리뼈 등 생김새와 크기가 다양한 뼈가 있음","근육은 뼈에 연결되어 있으며, 근육이 줄어들거나 늘어나면서 뼈를 움직임","기관: 우리가 살아가는 데 필요한 일을 하는 몸속 부분"],
+     misconceptions:["뼈가 딱딱한 구조물 역할만 한다고 생각함 → 뼈는 형태 유지·지탱·기관 보호의 세 가지 역할을 함","모든 뼈가 같은 역할을 한다고 생각함 → 뼈마다 형태와 기능이 다름"],
+     experiment:"인체 골격 모형 만들기: 뼈 도안을 똑딱단추 13개로 연결해 인체 골격 모형을 만들고 다양한 몸동작 표현"},
+    {id:2,title:"뼈와 근육",pages:"90~91쪽",
+     concepts:["뼈와 근육은 우리 몸을 움직이게 함","근육이 수축(줄어듦)하거나 이완(늘어남)하면서 뼈를 움직여 몸이 움직임","팔 구부릴 때: 팔 안쪽 근육 수축 + 바깥쪽 이완 → 아래팔뼈가 올라감","팔 펼 때: 팔 바깥쪽 근육 수축 + 안쪽 이완 → 아래팔뼈가 내려감"],
+     misconceptions:["팔을 펼 때도 안쪽 근육이 계속 수축한다는 오개념 → 팔 펼 때는 바깥쪽 근육이 수축하고 안쪽이 이완됨","근육이 뼈를 밀어낸다는 표현 → 근육은 수축(당기는 작용)으로 뼈를 움직임"],
+     experiment:"뼈와 근육 모형 만들기: 뼈·근육 도안을 똑딱단추 6개로 연결, 손잡이를 당겼다 밀면서 근육과 뼈의 변화 관찰"},
+    {id:3,title:"소화기관",pages:"92~93쪽",
+     concepts:["소화: 음식물 속 영양소를 흡수할 수 있도록 잘게 쪼개는 과정","소화기관 순서: 입→식도→위→작은창자→큰창자→항문","작은창자: 영양소와 대부분의 수분 흡수 / 큰창자: 음식물 찌꺼기에서 수분 흡수","간·쓸개·이자는 소화를 도와주는 소화기관"],
+     misconceptions:["큰창자에서 영양소를 흡수한다고 생각함 → 영양소 흡수는 작은창자에서 일어남","식도가 소화 역할을 한다고 생각함 → 식도는 음식물이 위로 이동하는 통로 역할만 함"],
+     experiment:"소화기관 도안과 스마트 기기로 구조·기능 알아보기, 소화 과정 막대를 내리면서 음식물이 잘게 쪼개지는 과정 관찰"},
+    {id:4,title:"순환기관",pages:"94~95쪽",
+     concepts:["혈액 순환: 혈액이 끊임없이 온몸을 도는 것","순환기관: 심장과 혈관","심장: 가슴 중앙 왼쪽에 위치, 펌프 작용으로 혈액을 온몸으로 보냄","혈관: 혈액이 이동하는 통로, 온몸에 퍼져 있음"],
+     misconceptions:["심장이 혈액을 만든다고 생각함 → 심장은 혈액을 순환시키는 펌프 역할","혈관이 심장 주변에만 있다고 생각함 → 혈관은 온몸에 퍼져 있음"],
+     experiment:"순환기관 모형실험: 붉은색소물(혈액)·호스(혈관)·펌프(심장)로 혈액 순환 모형 실험"},
+    {id:5,title:"호흡기관",pages:"96~97쪽",
+     concepts:["호흡기관: 코, 숨관, 숨관가지, 폐","숨을 들이마실 때: 코→숨관→숨관가지→폐 경로","폐: 산소를 받아들이고 이산화탄소를 몸 밖으로 내보냄","숨을 내쉴 때: 폐→숨관가지→숨관→코 경로"],
+     misconceptions:["코에서 바로 폐로 간다고 생각함 → 코-숨관-숨관가지-폐 순서로 공기가 이동함","산소만 들이마신다고 생각함 → 공기 전체를 들이마시며, 폐에서 산소만 흡수됨"],
+     experiment:"호흡기관 모형 만들기: 종이봉투 2장과 주름 빨대 2개로 모형 제작, 공기를 불어 넣으면 봉투(폐)가 팽창하는 것 관찰"},
+    {id:6,title:"배설기관",pages:"98~101쪽",
+     concepts:["배설: 노폐물을 걸러 내어 몸 밖으로 내보내는 과정","배설기관: 콩팥, 오줌관, 방광","콩팥: 혈액 속 노폐물을 걸러 내어 오줌을 만듦","오줌 경로: 콩팥→오줌관→방광→몸 밖","지능형 과학실 ON으로 여러 상황(밥 먹을 때·소변 볼 때·잠 잘 때)에서 각 기관 관찰"],
+     misconceptions:["콩팥이 소화기관과 관련 있다고 생각함 → 콩팥은 혈액을 걸러 노폐물을 제거하는 배설기관","오줌이 바로 몸 밖으로 나간다고 생각함 → 콩팥→오줌관→방광에 모였다가 몸 밖으로 나감"],
+     experiment:"배설기관 모형과 스마트 기기로 구조·기능 알아보기, 배설기관의 구조와 기능을 생각 그물로 표현하고 발표"},
+    {id:7,title:"운동할 때 우리 몸의 변화",pages:"102~103쪽",
+     concepts:["운동하면 뼈와 근육에 산소와 영양소가 더 많이 필요해짐","운동할 때: 호흡 빨라짐, 심장 빠르게 뜀, 체온 상승, 땀이 남","소화기관(영양소 흡수)→순환기관(운반)→호흡기관(산소 흡수)→뼈와근육(움직임)→배설기관(노폐물 제거)","각 기관은 서로 영향을 주고받으며 작용함"],
+     misconceptions:["운동할 때 소화기관은 쉰다고 생각함 → 소화기관은 운동 중에도 계속 기능함","기관들이 독립적으로 작동한다고 생각함 → 각 기관은 서로 영향을 주고받으며 협력함"],
+     experiment:"운동 전·직후·5분 휴식 후 체온과 1분 동안의 맥박 수 측정, 스마트기기 맥박 측정 앱 활용, 그래프로 나타내기"},
+    {id:8,title:"기관 관련 질병과 건강한 생활 방식",pages:"104~107쪽",
+     concepts:["소화기관 관련 질병: 장염(복통·설사), 변비(똥이 잘 나오지 않음·배 아픔)","호흡기관 관련 질병: 감기(기침·콧물·코막힘), 비염","순환기관 관련 질병: 빈혈(가슴 통증·몸이 피곤·숨이 참)","건강한 생활 방식: 음식 골고루 먹기, 규칙적으로 운동하기, 손 씻기, 잠 충분히 자기, 식사 후 양치하기"],
+     misconceptions:["질병과 기관을 연결 짓지 못함 → 각 질병은 특정 기관과 밀접하게 연관되어 있음","특정 음식만 먹으면 건강해진다고 생각함 → 균형 잡힌 식사가 중요함"],
+     experiment:"소화·순환·호흡·배설기관 중 하나를 골라 관련 질병 종류·증상·예방법 조사, 발표 자료나 책으로 만들어 공유"}
+  ]
+},
+"6":{
+  subject:"식물의 구조와 기능",
+  lessons:[
+    {id:1,title:"세포 — 생물의 기본 단위",pages:"62~63쪽",
+     concepts:["세포: 생물을 이루는 기본 단위, 광학 현미경으로 관찰","식물 세포 구조: 세포벽(가장 바깥)→세포막(세포를 둘러쌈)→핵(둥근 모양)","세포는 종류에 따라 크기와 모양이 다양함","관찰 예: 사철나무잎 뒷면 표피세포, 양파 표피세포(핵 염색 시 뚜렷하게 보임)"],
+     misconceptions:["세포막이 가장 바깥쪽이라고 생각함 → 식물 세포는 세포벽이 세포막보다 더 바깥쪽에 있음","모든 세포가 같은 모양이라고 생각함 → 세포는 종류에 따라 크기와 모양이 다양함"],
+     experiment:"사철나무잎 표피세포 현미경표본 만들기(투명 매니큐어→셀로판테이프), 양파 표피세포 영구표본 관찰, 그림과 글로 나타내기"},
+    {id:2,title:"뿌리의 생김새와 하는 일",pages:"64~65쪽",
+     concepts:["뿌리의 기능: 물 흡수, 식물 지지(쓰러지지 않게), 양분 저장(당근·고구마)","뿌리털: 솜털처럼 가는 털, 물 흡수 면적을 넓혀 효율적으로 물 흡수","수염뿌리(백합·강아지풀) vs 곧은뿌리(민들레·사과나무)"],
+     misconceptions:["뿌리가 고정 역할만 한다고 생각함 → 뿌리는 물·무기물 흡수, 양분 저장도 함","당근이 뿌리라는 것을 모름 → 당근은 뿌리에 양분을 저장한 것"],
+     experiment:"뿌리가 하는 일 알아보기: 뿌리를 자른 파·자르지 않은 파를 눈금실린더에 넣어 3일 뒤 물의 높이 변화 비교"},
+    {id:3,title:"줄기의 생김새와 하는 일",pages:"66~67쪽",
+     concepts:["줄기의 기능: 물이 이동하는 통로, 식물 지지, 양분 저장(감자)","줄기 단면 실험: 붉은색 색소 물에 넣으면 물 이동 통로 부분만 붉게 물듦","곧은줄기(봉선화), 기는줄기(딸기), 감는줄기(나팔꽃), 덩이줄기(감자)"],
+     misconceptions:["줄기가 지지대 역할만 한다고 생각함 → 줄기는 물과 양분의 이동 통로이기도 함","감자가 뿌리라고 생각함 → 감자는 줄기(덩이줄기)에 양분을 저장한 것"],
+     experiment:"줄기에서 물의 이동 실험: 백합 줄기를 붉은색 색소 물에 하루 넣고, 줄기를 가로·세로로 잘라 붉게 물든 통로 확인"},
+    {id:4,title:"잎 — 광합성",pages:"68~69쪽",
+     concepts:["광합성: 식물이 빛을 이용해 이산화탄소와 물로 양분(녹말)을 만드는 것","광합성 공식: 빛 + 이산화탄소 + 물 → 양분(녹말) + 산소","광합성은 주로 잎에서 가장 활발하게 일어남","아이오딘-아이오딘화 칼륨 용액: 녹말과 반응하면 청람색으로 변함"],
+     misconceptions:["광합성 결과물이 산소만이라고 생각함 → 광합성으로 양분(녹말)도 만들어짐","빛이 없어도 광합성이 일어난다고 생각함 → 광합성에는 반드시 빛이 필요함"],
+     experiment:"광합성산물 확인 실험: 잎에 알루미늄 포일 씌워 빛 차단→하루 후 에탄올로 탈색→아이오딘 용액으로 녹말 확인"},
+    {id:5,title:"잎 — 증산 작용",pages:"70~71쪽",
+     concepts:["증산 작용: 잎에 도달한 물의 일부가 수증기가 되어 기공을 통해 식물 밖으로 빠져나가는 것","기공: 잎 표면의 작은 구멍, 주로 잎 뒷면에 분포","증산 작용의 역할: 뿌리에서 흡수된 물이 잎까지 도달하게 함, 식물 온도 조절","푸른색 염화 코발트 종이: 물을 흡수하면 붉은색으로 변함"],
+     misconceptions:["증산 작용이 해롭다고 생각함 → 증산 작용은 물 이동·온도 조절에 꼭 필요함","기공이 잎의 앞면에만 있다고 생각함 → 기공은 주로 잎 뒷면에 더 많이 분포함"],
+     experiment:"증산 작용 확인 실험: 잎 뒷면에 붙인 염화 코발트 종이와 페트리접시에 붙인 것의 색깔 변화 10분 후 비교"},
+    {id:6,title:"꽃의 생김새와 하는 일",pages:"72~75쪽",
+     concepts:["꽃의 구조: 암술, 수술, 꽃잎, 꽃받침","꽃가루받이: 꽃가루가 곤충·새·바람·물 등의 도움으로 암술에 옮겨 붙는 과정","꽃가루받이→씨 형성→씨를 둘러싼 부분이 함께 자라 열매가 됨","씨앗도서관: 씨를 대출해주는 곳, 토종 씨 보존·신품종 전시"],
+     misconceptions:["꽃이 단순히 장식이라고 생각함 → 꽃은 씨를 만들어 번식하는 중요한 역할을 함","꽃가루받이와 수정을 같은 것으로 혼동함 → 꽃가루받이는 꽃가루가 암술에 닿는 것, 수정은 씨를 만드는 과정"],
+     experiment:"꽃의 생김새 관찰하기: 달맞이꽃 또는 제라늄꽃을 해부해 암술·수술·꽃잎·꽃받침 분리, 그림과 글로 나타내기"},
+    {id:7,title:"식물 각 기관의 연결성",pages:"76~77쪽",
+     concepts:["뿌리(물흡수)→줄기(이동통로)→잎(광합성·증산)→꽃(씨생산)→열매(씨보호·퍼뜨림)","뿌리에서 흡수한 물은 줄기를 통해 식물 전체로 이동","잎에서 광합성으로 만든 양분은 줄기를 통해 식물 전체로 이동, 남은 것은 저장","식물의 각 기관은 서로 다른 일을 하지만 밀접하게 연결되어 있음"],
+     misconceptions:["식물의 각 기관이 독립적으로 기능한다고 생각함 → 모든 기관은 서로 연결되어 영향을 주고받음","양분이 잎에만 저장된다고 생각함 → 양분은 뿌리·줄기·열매 등에도 저장됨"],
+     experiment:"물과 양분의 이동 놀이: 식물 말판으로 물은 뿌리에서, 양분은 잎에서 출발해 가위바위보로 식물 전체 이동 경로 익히기"},
+    {id:8,title:"만능 재주꾼, 꽃가루",pages:"80~81쪽",
+     concepts:["꽃가루는 크기가 매우 작고, 식물의 종류에 따라 모양이 모두 다름","꽃가루는 '식물의 다이아몬드'라 불릴 만큼 형태가 변하지 않고 안정적임","꽃가루 활용 ①: 해바라기 꽃가루로 3D 프린터 잉크 개발 — 독성 없어 의료용으로 가능","꽃가루 활용 ②: 범죄 수사 — 증거품의 꽃가루로 범죄 현장이나 범인 추적","꽃가루 활용 ③: 꽃가루 화석으로 과거 지구의 기후 조사"],
+     misconceptions:["꽃가루가 수분에만 쓰인다고 생각함 → 꽃가루는 과학 연구·범죄 수사·3D 프린팅 등 다양한 분야에 활용됨","모든 꽃가루가 같은 모양이라고 생각함 → 식물 종류마다 꽃가루 모양이 다름","꽃가루가 금방 변질된다고 생각함 → 꽃가루는 형태가 매우 안정적으로 오랫동안 보존 가능"],
+     experiment:"꽃가루 특징 탐구: 꽃가루가 활용되는 다양한 분야(3D 프린팅·범죄 수사·기후 연구) 조사, 꽃가루의 특징을 이용해 무엇을 만들 수 있을지 아이디어 생각하기"}
+  ]
+}
+};
+
+// ============================================================
+// ACTIVITY STEPS
+// 실험집단: 3단계, 전체 15분 단일 타이머
+// 통제집단: 3단계, 전체 15분 단일 타이머
+// 단계 전환은 AI 자율 판단 (S1→S2→S3) — 학생 버튼 없음
+// 이행 충실도는 대화 로그의 내용 분석으로 사후 측정
+// ============================================================
+
+const EXP_STEPS = [
+  {
+    num: 1, label: "STEP1-자유설명",
+    greeting: (n, l) =>
+      `안녕하세요${n?', '+n:''}! 저는 오늘 과학 수업을 처음 들은 학생이에요. "${l.title}"에 대해 아직 잘 몰라요. 오늘 배운 내용을 설명해 주세요!`
+  },
+  {
+    num: 2, label: "STEP2-AI확인질문",
+    greeting: () =>
+      `설명 잘 들었어요! 그런데 제가 잘 이해가 안 되는 부분이 있어서 물어볼게요. 아는 만큼 설명해 주세요!`
+  },
+  {
+    num: 3, label: "STEP3-추가설명",
+    greeting: () =>
+      `이제 꽤 많이 이해됐어요! 아까 질문했던 부분, 지금은 어떻게 설명할 수 있는지 말해 주세요!`
+  }
+];
+
+const CTRL_STEPS = [
+  {
+    num: 1, label: "STEP1-질문생성",
+    greeting: (n, l) =>
+      `안녕하세요${n?', '+n:''}! 오늘의 과학 선생님이에요 😊 "${l.title}" 수업을 들었군요! 오늘 배우면서 궁금했던 것이 있으면 무엇이든 질문해보세요!`
+  },
+  {
+    num: 2, label: "STEP2-답변탐색",
+    greeting: () => `좋은 질문이에요! 선생님이 자세히 설명해드릴게요.`
+  },
+  {
+    num: 3, label: "STEP3-심화질문",
+    greeting: () => `잘 이해됐나요? 제 설명을 읽고 새로운 궁금증이 생겼다면 추가로 질문해보세요!`
+  }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let apiKey = '';
+
+// ============================================================
+// ⚠️ GitHub Pages 배포용 — 아래 YOUR_PROXY_URL_HERE 에
+// Google Apps Script 프록시 웹앱 URL을 입력 후 업로드
+// API 키는 Apps Script 내부에만 저장 — HTML에 절대 입력 금지
+// ============================================================
+// PROXY_URL은 getGasUrl()로 동적으로 읽음 (교사 패널 설정 URL 우선)
+let state = {
+  phase:'setup', grade:'5', lessonId:1, groupType:'experiment',
+  studentName:'', sessionId:'', currentStep:1, timer:900,
+  timerMax:900, timerInterval:null, displayMessages:[], apiMessages:[],
+  inputText:'', isLoading:false, showStepDone:false,
+  userMsgCount:0  // 학생 발화 누적 수 — 단계 자동 태깅에 사용
+};
+
+function genSessionId(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+function getLesson(){ return GRADES[state.grade].lessons.find(l=>l.id===state.lessonId); }
+function getSteps(){ return state.groupType==='experiment'?EXP_STEPS:CTRL_STEPS; }
+
+// ============================================================
+// CONVERSATION LOGGING
+// ============================================================
+function logEntry(role, content, step, stepLabel){
+  const logs = JSON.parse(localStorage.getItem(LOG_KEY)||'[]');
+  logs.push({
+    session_id: state.sessionId,
+    timestamp: kstNow(),
+    student_id: state.studentName || '(미입력)',
+    grade: state.grade,
+    lesson_id: state.lessonId,
+    lesson_title: getLesson().title,
+    lesson_pages: getLesson().pages,
+    mode: state.groupType,               // 'experiment' | 'control'
+    mode_label: state.groupType==='experiment'?'유형A(실험집단)':'유형B(통제집단)',
+    step: step || state.currentStep,
+    step_label: stepLabel || getSteps()[state.currentStep-1]?.label || '',
+    role: role,                          // 'user' | 'assistant'
+    content: content
+  });
+  localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+}
+
+// ============================================================
+// 단계 자동 추적 (학생 UI에 표시 안 함 — 로그 태깅 전용)
+// 학생 발화 누적 수로 단계를 추정: 1-3발화=S1, 4-7발화=S2, 8+=S3
+// 이행 충실도는 연구자가 로그 내용 분석으로 사후 검증
+// ============================================================
+function autoTrackStep(){
+  const n = state.userMsgCount;
+  let step;
+  if(n <= 3)      step = 1;
+  else if(n <= 7) step = 2;
+  else            step = 3;
+  state.currentStep = step;
+}
+const API_KEY_STORE = 'ai_study_apikey_v1'; // localStorage 키 저장용
+
+function confirmKey(){
+  const v = document.getElementById('api-key-inp').value.trim();
+  if(!v){alert('API 키를 입력해주세요.');return;}
+  if(!v.startsWith('sk-ant')){alert('올바른 API 키 형식이 아닙니다.\nsk-ant-api03- 으로 시작하는 키를 입력해주세요.');return;}
+  apiKey = v;
+  // 매번 입력 방식 — localStorage에 저장하지 않음
+  document.getElementById('key-ov').style.display='none';
+  render();
+}
+function changeKey(){
+  apiKey='';
+  document.getElementById('key-ov').style.display='flex';
+}
+
+// ============================================================
+// TEACHER PANEL
+// ============================================================
+function openTeacher(){
+  document.getElementById('teacher-ov').style.display='flex';
+  document.getElementById('teacher-pin-area').style.display='block';
+  document.getElementById('teacher-content').style.display='none';
+  document.getElementById('pin-inp').value='';
+  document.getElementById('pin-err').style.display='none';
+}
+function closeTeacher(){document.getElementById('teacher-ov').style.display='none';}
+function checkPin(){
+  if(document.getElementById('pin-inp').value===getPin()){
+    document.getElementById('teacher-pin-area').style.display='none';
+    document.getElementById('teacher-content').style.display='block';
+    switchTab('tab-settings');
+    updateModeBtns();
+    renderStats();
+    // 저장된 GAS URL 자동 표시
+    const gasEl = document.getElementById('gas-url-inp');
+    if(gasEl) gasEl.value = getGasUrl();
+    const readEl = document.getElementById('read-url-inp');
+    if(readEl) readEl.value = getDataReadUrl();
+    const readKeyEl = document.getElementById('read-key-inp');
+    if(readKeyEl) readKeyEl.value = getDataReadKey();
+  } else {
+    document.getElementById('pin-err').style.display='block';
+  }
+}
+function setDefaultMode(m){ state.groupType=m; updateModeBtns(); }
+function updateModeBtns(){
+  const a=document.getElementById('mode-a-btn');
+  const b=document.getElementById('mode-b-btn');
+  if(a&&b){
+    a.className='t-btn'+(state.groupType==='experiment'?' on':'');
+    b.className='t-btn'+(state.groupType==='control'?' on':'');
+  }
+}
+function changePin(){
+  const np = document.getElementById('new-pin').value;
+  if(np.length<4){alert('비밀번호는 4자리 이상이어야 합니다.');return;}
+  localStorage.setItem(PIN_KEY, np);
+  alert('비밀번호가 변경되었습니다.');
+  document.getElementById('new-pin').value='';
+}
+
+// ============================================================
+// Google Sheets 연동 (GAS Web App)
+// ============================================================
+const EMBEDDED_GAS_URL = 'https://ai-proxy.tactus35.workers.dev/'; // 새 Worker (채팅 + 로그 전달)
+function getGasUrl(){ return localStorage.getItem(GAS_URL_KEY) || EMBEDDED_GAS_URL; }
+
+function saveGasUrl(){
+  const v = document.getElementById('gas-url-inp')?.value?.trim()||'';
+  if(!v){ alert('URL을 입력해주세요.'); return; }
+  if(!v.startsWith('https://')){
+    alert('올바른 URL이 아닙니다. https:// 로 시작해야 합니다.'); return;
+  }
+  localStorage.setItem(GAS_URL_KEY, v);
+  showGasStatus('✅ URL이 저장되었습니다. 이제 학생 활동 종료 시 자동 전송됩니다.', 'var(--g)');
+}
+
+function clearGasUrl(){
+  if(!confirm('Google Sheets 연동을 해제하시겠습니까?')) return;
+  localStorage.removeItem(GAS_URL_KEY);
+  const el = document.getElementById('gas-url-inp');
+  if(el) el.value='';
+  showGasStatus('연동이 해제되었습니다.', 'var(--muted)');
+}
+
+// ============================================================
+// 전체 데이터 불러오기 (중앙 집계 — 읽기 전용 Apps Script)
+// ============================================================
+function getDataReadUrl(){ return localStorage.getItem(DATA_READ_URL_KEY) || ''; }
+function getDataReadKey(){ return localStorage.getItem(READ_KEY_KEY) || ''; }
+function showReadStatus(msg, color){
+  const el = document.getElementById('read-status');
+  if(!el) return;
+  el.style.display='block'; el.style.color=color||'var(--text)'; el.textContent=msg;
+}
+function saveReadUrl(){
+  const v = document.getElementById('read-url-inp')?.value?.trim()||'';
+  const k = document.getElementById('read-key-inp')?.value?.trim()||'';
+  if(!v){ showReadStatus('URL을 입력해주세요.', 'var(--red)'); return; }
+  if(!v.startsWith('https://')){ showReadStatus('https:// 로 시작하는 URL이어야 합니다.', 'var(--red)'); return; }
+  localStorage.setItem(DATA_READ_URL_KEY, v);
+  localStorage.setItem(READ_KEY_KEY, k);
+  showReadStatus(k ? '✅ URL·비밀키가 저장되었습니다. 이제 [전체 불러오기]를 누르세요.'
+                   : '✅ URL이 저장되었습니다. (비밀키 미설정 — 스크립트도 잠금이 없어야 합니다)', 'var(--g)');
+}
+// 시트 컬럼(한글 헤더) → 내부 로그 스키마 역매핑
+function mapSheetRowToLog(o){
+  const sp = o['발화자'];
+  const role = sp==='학생' ? 'user' : sp==='AI' ? 'assistant'
+             : sp==='user' ? 'user' : sp==='assistant' ? 'assistant' : sp;
+  const ml = String(o['유형']||'');
+  const mode = ml.indexOf('유형A')>-1 ? 'experiment'
+             : ml.indexOf('유형B')>-1 ? 'control' : '';
+  return {
+    session_id: String(o['세션ID']||''), timestamp: String(o['타임스탬프']||''),
+    student_id: String(o['학생ID']||''), grade: String(o['학년']||''),
+    lesson_id: String(o['차시번호']||''), lesson_title: String(o['차시명']||''),
+    lesson_pages: '', mode: mode, mode_label: ml,
+    step: o['단계번호'], step_label: String(o['단계명']||''),
+    role: role, content: String(o['내용']||'')
+  };
+}
+async function loadAllFromSheet(){
+  const url = getDataReadUrl();
+  if(!url){ showReadStatus('먼저 읽기 URL을 저장하세요.', 'var(--red)'); return; }
+  showReadStatus('⏳ 모든 학생 데이터를 불러오는 중...', 'var(--muted)');
+  try{
+    const key = getDataReadKey();
+    const u = url + (url.indexOf('?')>-1?'&':'?') + 'key=' + encodeURIComponent(key);
+    const resp = await fetch(u, { method:'GET' });
+    const data = await resp.json();
+    if(data && data.ok===false){
+      showReadStatus(data.error==='unauthorized'
+        ? '🔒 비밀키가 일치하지 않습니다. 스크립트의 키와 앱의 [읽기 비밀키]를 동일하게 맞추세요.'
+        : ('읽기 오류: '+data.error), 'var(--red)');
+      return;
+    }
+    if(!Array.isArray(data)){
+      showReadStatus('데이터 형식 오류: 배열이 아닙니다. 읽기 스크립트(doGet)를 확인하세요.', 'var(--red)');
+      return;
+    }
+    const incoming = data.map(mapSheetRowToLog).filter(r => r.session_id && r.timestamp);
+    const existing = getLogs();
+    const seen = new Set(existing.map(r => r.session_id+'|'+r.timestamp+'|'+r.role+'|'+r.content));
+    let added = 0;
+    incoming.forEach(r => {
+      const k = r.session_id+'|'+r.timestamp+'|'+r.role+'|'+r.content;
+      if(!seen.has(k)){ existing.push(r); seen.add(k); added++; }
+    });
+    localStorage.setItem(LOG_KEY, JSON.stringify(existing));
+    const students = new Set(existing.map(r=>r.student_id)).size;
+    showReadStatus(`✅ 완료 — 신규 ${added}건 추가 (총 발화 ${existing.length}건 · 학생 ${students}명). 이제 통계·이행충실도·질적 코딩·엑셀을 전원 대상으로 실행하세요.`, 'var(--g)');
+    if(typeof renderLogs==='function') renderLogs();
+    if(typeof renderStats==='function') renderStats();
+  }catch(e){
+    showReadStatus('불러오기 실패: '+e.message+' — URL·배포 권한(모든 사용자)·CORS를 확인하세요.', 'var(--red)');
+  }
+}
+
+async function testGasUrl(){
+  const url = document.getElementById('gas-url-inp')?.value?.trim() || getGasUrl();
+  if(!url){ alert('먼저 URL을 입력하고 저장해주세요.'); return; }
+  showGasStatus('⏳ 연결 테스트 중...', 'var(--muted)');
+  try{
+    const resp = await fetch(url, { method:'GET', mode:'no-cors' });
+    showGasStatus('✅ 연결 성공! Google Sheets와 정상 연동됩니다.', 'var(--g)');
+  } catch(e){
+    showGasStatus(`❌ 연결 실패: ${e.message}`, 'var(--red)');
+  }
+}
+
+function showGasStatus(msg, color){
+  const el = document.getElementById('gas-status');
+  if(!el) return;
+  el.style.display='block';
+  el.style.color = color||'var(--muted)';
+  el.textContent = msg;
+}
+
+// 세션 완료 시 GAS로 로그 전송
+async function uploadSessionToSheets(sessionId){
+  const url = getGasUrl();
+  if(!url) return; // 연동 미설정 시 무시
+
+  const allLogs = getLogs();
+  const sessionLogs = allLogs.filter(r=>r.session_id===sessionId);
+  if(!sessionLogs.length) return;
+
+  // 발화자 표기를 AI/학생으로 변환한 사본을 전송 (원본 role은 보존 → 프록시 코드 수정 불필요)
+  const sendLogs = sessionLogs.map(r => ({
+    ...r,
+    role: r.role === 'assistant' ? 'AI' : r.role === 'user' ? '학생' : r.role
+  }));
+
+  try{
+    // no-cors 모드에서 문자열 body는 ISO-8859-1 검사 대상 → 한글 포함 시 오류
+    // FormData 사용: multipart/form-data는 CORS-safelisted, 인코딩 제한 없음
+    const fd = new FormData();
+    fd.append('action', 'logs');
+    fd.append('data', JSON.stringify({ logs: sendLogs }));
+    fd.append('payload', JSON.stringify({ action: 'logs', logs: sendLogs }));
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: fd
+    });
+  } catch(e){
+    // 전송 실패 시 조용히 무시 (로컬 로그는 보존됨)
+    console.warn('GAS 전송 실패 (로컬 저장은 정상):', e.message);
+  }
+}
+function switchTab(id){
+  document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('on'));
+  document.querySelectorAll('.dash-tab').forEach(e=>e.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  const tabs=['tab-settings','tab-logs','tab-stats','tab-fidelity','tab-coding'];
+  const idx=tabs.indexOf(id);
+  if(idx>=0) document.querySelectorAll('.dash-tab')[idx].classList.add('on');
+  if(id==='tab-logs') renderLogs();
+  if(id==='tab-stats') renderStats();
+  if(id==='tab-fidelity') renderFidelityResults();
+  if(id==='tab-coding') renderCodingResults();
+}
+
+// ============================================================
+// LOG VIEWER
+// ============================================================
+function getLogs(){
+  return JSON.parse(localStorage.getItem(LOG_KEY)||'[]');
+}
+function renderLogs(){
+  const g=document.getElementById('filter-grade')?.value||'';
+  const m=document.getElementById('filter-mode')?.value||'';
+  const l=document.getElementById('filter-lesson')?.value||'';
+  const n=(document.getElementById('filter-name')?.value||'').trim().toLowerCase();
+  let logs=getLogs().filter(r=>{
+    if(g&&r.grade!==g) return false;
+    if(m&&r.mode!==m) return false;
+    if(l&&String(r.lesson_id)!==l) return false;
+    if(n&&!(r.student_id||'').toLowerCase().includes(n)) return false;
+    return true;
+  });
+  const area=document.getElementById('log-table-area');
+  if(!area) return;
+  if(logs.length===0){area.innerHTML='<div class="empty-state">조건에 맞는 대화 기록이 없습니다.</div>';return;}
+  const rows=logs.slice().reverse().map(r=>{
+    const ts=kstLabel(r.timestamp);
+    const mTag=r.mode==='experiment'?`<span class="tag-exp">유형A</span>`:`<span class="tag-ctrl">유형B</span>`;
+    const rTag=r.role==='user'?`<span class="tag-user">학생</span>`:`<span class="tag-ai">AI</span>`;
+    const txt=r.content.length>80?r.content.slice(0,80)+'…':r.content;
+    return `<tr><td style="white-space:nowrap">${ts}</td><td>${r.student_id}</td><td>${r.grade}학년</td><td style="white-space:nowrap">${r.lesson_id}차시</td><td>${mTag}</td><td>${r.step}단계</td><td>${rTag}</td><td>${txt.replace(/</g,'&lt;')}</td></tr>`;
+  }).join('');
+  area.innerHTML=`<table><thead><tr><th>시간</th><th>학생 ID</th><th>학년</th><th>차시</th><th>유형</th><th>단계</th><th>발화</th><th>내용</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function renderStats(){
+  const logs=getLogs();
+  const grid=document.getElementById('stats-grid');
+  const detail=document.getElementById('stats-detail');
+  if(!grid) return;
+  const sessions=new Set(logs.map(r=>r.session_id)).size;
+  const students=new Set(logs.map(r=>r.student_id)).size;
+  const expLogs=logs.filter(r=>r.mode==='experiment');
+  const ctrlLogs=logs.filter(r=>r.mode==='control');
+  const userLogs=logs.filter(r=>r.role==='user');
+  grid.innerHTML=`
+    <div class="stat-card"><div class="stat-num">${logs.length}</div><div class="stat-lbl">전체 발화 수</div></div>
+    <div class="stat-card"><div class="stat-num">${sessions}</div><div class="stat-lbl">총 차시 수</div></div>
+    <div class="stat-card"><div class="stat-num">${students}</div><div class="stat-lbl">참여 학생 수</div></div>
+    <div class="stat-card"><div class="stat-num">${expLogs.length}</div><div class="stat-lbl">유형A 발화 수</div></div>
+    <div class="stat-card"><div class="stat-num">${ctrlLogs.length}</div><div class="stat-lbl">유형B 발화 수</div></div>
+    <div class="stat-card"><div class="stat-num">${userLogs.length}</div><div class="stat-lbl">학생 발화 수</div></div>
+  `;
+  // Per lesson
+  const byLesson={};
+  logs.forEach(r=>{
+    const k=`${r.grade}학년 ${r.lesson_id}차시`;
+    if(!byLesson[k]) byLesson[k]={total:0,exp:0,ctrl:0};
+    byLesson[k].total++;
+    if(r.mode==='experiment') byLesson[k].exp++;
+    else byLesson[k].ctrl++;
+  });
+  const rows=Object.entries(byLesson).sort().map(([k,v])=>
+    `<tr><td>${k}</td><td>${v.exp}</td><td>${v.ctrl}</td><td>${v.total}</td></tr>`
+  ).join('');
+  detail.innerHTML=rows?`<table style="width:100%;font-size:12px"><thead><tr><th style="padding:6px;background:#f0f0ea">차시</th><th style="padding:6px;background:#f0f0ea">유형A</th><th style="padding:6px;background:#f0f0ea">유형B</th><th style="padding:6px;background:#f0f0ea">합계</th></tr></thead><tbody>${rows}</tbody></table>`:'<p>기록이 없습니다.</p>';
+}
+function exportCSV(){
+  const logs=getLogs();
+  if(!logs.length){alert('내보낼 기록이 없습니다.');return;}
+  const header='session_id,timestamp,student_id,grade,lesson_id,lesson_title,lesson_pages,mode,mode_label,step,step_label,role,content';
+  const rows=logs.map(r=>[
+    r.session_id, r.timestamp, r.student_id, r.grade, r.lesson_id,
+    `"${(r.lesson_title||'').replace(/"/g,'""')}"`,
+    r.lesson_pages, r.mode, r.mode_label, r.step,
+    `"${(r.step_label||'').replace(/"/g,'""')}"`,
+    r.role,
+    `"${(r.content||'').replace(/"/g,'""').replace(/\n/g,' ')}"`
+  ].join(','));
+  const csv='\uFEFF'+[header,...rows].join('\n'); // BOM for Excel
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`AI학습기록_${kstFileDate()}.csv`;
+  a.click();
+}
+function exportJSON(){
+  const logs=getLogs();
+  if(!logs.length){alert('내보낼 기록이 없습니다.');return;}
+  const blob=new Blob([JSON.stringify(logs,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`AI학습기록_${kstFileDate()}.json`;
+  a.click();
+}
+
+
+// ============================================================
+// 질적 코딩 — KT/KB/GE 자동 코딩
+// ============================================================
+function getCodingResults(){
+  return JSON.parse(localStorage.getItem(CODING_KEY)||'[]');
+}
+
+async function autoCodeSession(sessionId){
+  const PROXY_URL = getGasUrl();
+  if(!PROXY_URL) return;
+  const allLogs = getLogs();
+  const utterances = allLogs.filter(r =>
+    r.session_id === sessionId && r.role === 'user' && r.mode === 'experiment'
+  );
+  if(!utterances.length) return;
+  if(getCodingResults().some(c => c.session_id === sessionId)) return;
+
+  const systemPrompt = `당신은 초등 과학 AI 설명하기 활동에서 학생 발화를 코딩하는 연구 보조자입니다.
+Roscoe & Chi(2007, 2008)의 KT·KB 코딩 체계를 초등 과학 AI 대화 맥락에 수정한 프레임워크를 적용합니다.
+
+【코드 정의】
+KT(지식 나열형): 개념 간 관계 없이 단편적 사실·명칭·특징을 나열. 예: "뿌리는 물 흡수, 줄기는 이동."
+KB(지식 구성형): 개념 간 인과관계·상호작용을 언어로 연결하여 설명. 예: "뿌리가 흡수한 물이 줄기를 타고 올라가야 광합성이 가능해."
+GE(이해 공백 표현): 자신의 이해 한계·불확실성을 명시적으로 표현. 예: "증산작용이 왜 물을 올라오게 하는지 모르겠어."
+
+【코딩 규칙】
+- 발화의 주된 인지적 기능 하나만 선택
+- 단순 단어 나열·짧은 응답은 KT
+- JSON 배열만 응답, 다른 텍스트 없음
+
+응답 형식: [{"idx":0,"code":"KT","reason":"판정이유15자이내"}, ...]`;
+
+  const contextTurns = utterances.map((u, i) => {
+    const prevAI = allLogs
+      .filter(r => r.session_id === sessionId && r.role === 'assistant' && r.timestamp < u.timestamp)
+      .slice(-1)[0];
+    return { idx: i, prev_ai: prevAI ? prevAI.content.slice(0,80) : null, student: u.content, step: u.step };
+  });
+
+  try {
+    const resp = await fetch(PROXY_URL + '?action=chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 1500,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: '다음 학생 발화들을 코딩해주세요. prev_ai는 직전 AI 발화 앞부분(없으면 null)입니다.\n\n' + JSON.stringify(contextTurns) }]
+      })
+    });
+    if(!resp.ok) return;
+    const data = await resp.json();
+    if(data.error) return;
+    const raw = (data.content?.[0]?.text || '[]').replace(/```json|```/g,'').trim();
+    const codes = JSON.parse(raw);
+    const results = codes.map(c => ({
+      session_id: sessionId,
+      student_id: utterances[c.idx]?.student_id || '',
+      grade:      utterances[c.idx]?.grade || '',
+      lesson_id:  utterances[c.idx]?.lesson_id || '',
+      lesson_title: utterances[c.idx]?.lesson_title || '',
+      step:       utterances[c.idx]?.step || '',
+      step_label: utterances[c.idx]?.step_label || '',
+      timestamp:  utterances[c.idx]?.timestamp || '',
+      content:    utterances[c.idx]?.content || '',
+      code_ai:    c.code || '',
+      reason:     c.reason || '',
+      coded_at:   kstNow()
+    }));
+    const stored = getCodingResults();
+    localStorage.setItem(CODING_KEY, JSON.stringify([...stored, ...results]));
+  } catch(e){ console.warn('자동 코딩 실패:', e.message); }
+}
+
+async function runBatchCoding(){
+  const PROXY_URL = getGasUrl();
+  if(!PROXY_URL){ alert('프록시 URL이 설정되지 않았습니다.'); return; }
+  const logs = getLogs();
+  const sessionIds = [...new Set(logs.filter(r => r.mode === 'experiment').map(r => r.session_id))];
+  if(!sessionIds.length){ alert('실험집단 세션이 없습니다.'); return; }
+  const done = new Set(getCodingResults().map(c => c.session_id));
+  const todo = sessionIds.filter(id => !done.has(id));
+  if(!todo.length){ alert('모든 세션이 이미 코딩되었습니다.\n초기화 후 재실행하세요.'); renderCodingResults(); return; }
+
+  const btn = document.getElementById('coding-run-btn');
+  const prog = document.getElementById('coding-progress');
+  btn.disabled = true; prog.style.display = 'block';
+  let ok = 0, fail = 0;
+  for(let i = 0; i < todo.length; i++){
+    const sid = todo[i];
+    const info = logs.find(r => r.session_id === sid);
+    prog.innerHTML = `⏳ 코딩 중... (${i+1}/${todo.length}) — 학생 ${info?.student_id || sid}`;
+    try { await autoCodeSession(sid); ok++; } catch(e){ fail++; }
+    await new Promise(r => setTimeout(r, 600));
+  }
+  prog.innerHTML = `✅ 완료: ${ok}개 성공${fail ? ` / ${fail}개 오류` : ''}`;
+  setTimeout(() => { prog.style.display = 'none'; }, 3000);
+  btn.disabled = false;
+  renderCodingResults();
+}
+
+function renderCodingResults(){
+  const area = document.getElementById('coding-result-area');
+  if(!area) return;
+  const results = getCodingResults();
+  if(!results.length){
+    area.innerHTML = '<div class="empty-state">코딩 결과가 없습니다. 위 버튼으로 실행하거나, 학생 활동 완료 시 자동 코딩됩니다.</div>';
+    return;
+  }
+  const codeColor = { KT:'#e8f5e9', KB:'#e3f0ff', GE:'#fff3e0' };
+  const codeText  = { KT:'#1b5e20', KB:'#0c3b6b', GE:'#e65100' };
+  const bySession = {};
+  results.forEach(r => {
+    if(!bySession[r.session_id]) bySession[r.session_id] = {
+      student_id:r.student_id, grade:r.grade, lesson_id:r.lesson_id,
+      lesson_title:r.lesson_title, counts:{KT:0,KB:0,GE:0}, total:0
+    };
+    bySession[r.session_id].counts[r.code_ai] = (bySession[r.session_id].counts[r.code_ai]||0)+1;
+    bySession[r.session_id].total++;
+  });
+  const summaryRows = Object.entries(bySession).map(([,s]) => {
+    const bars = ['KT','KB','GE'].map(code =>
+      `<span style="background:${codeColor[code]};color:${codeText[code]};padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;margin-right:3px">${code} ${s.counts[code]||0}</span>`
+    ).join('');
+    return `<tr><td>${s.student_id}</td><td>${s.grade}학년</td><td>${s.lesson_id}차시<br><span style="font-size:10px;color:var(--muted)">${s.lesson_title||''}</span></td><td>${s.total}</td><td>${bars}</td></tr>`;
+  }).join('');
+  const detailRows = results.map(r => {
+    const bg=codeColor[r.code_ai]||'#f5f5f5', tc=codeText[r.code_ai]||'#333';
+    const txt = r.content.length>60 ? r.content.slice(0,60)+'…' : r.content;
+    return `<tr><td>${r.student_id}</td><td>${r.grade}학년 ${r.lesson_id}차시</td><td>${r.step_label||r.step}</td><td>${txt.replace(/</g,'&lt;')}</td><td style="text-align:center"><span style="background:${bg};color:${tc};padding:2px 8px;border-radius:4px;font-weight:700;font-size:12px">${r.code_ai}</span></td><td style="font-size:11px;color:var(--muted)">${r.reason||''}</td></tr>`;
+  }).join('');
+  area.innerHTML = `
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px">세션별 코드 분포</div>
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px">
+        <table><thead><tr><th>학생ID</th><th>학년</th><th>차시</th><th>발화수</th><th>코드 분포</th></tr></thead><tbody>${summaryRows}</tbody></table>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px">발화별 상세 코딩 결과</div>
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:400px;overflow-y:auto">
+        <table><thead><tr><th>학생ID</th><th>차시</th><th>단계</th><th>발화내용</th><th>코드</th><th>AI 판정 근거</th></tr></thead><tbody>${detailRows}</tbody></table>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px">총 ${results.length}개 발화 코딩 완료 | Excel 내보내기 시 질적코딩워크시트에 자동 반영</div>`;
+}
+
+function clearCodingResults(){
+  if(!confirm('코딩 결과를 모두 초기화하시겠습니까?')) return;
+  localStorage.removeItem(CODING_KEY);
+  renderCodingResults();
+}
+
+function exportXLSX(){
+  const logs=getLogs();
+  if(!logs.length){alert('내보낼 기록이 없습니다.');return;}
+
+  // 시트 1: 전체 대화 로그
+  const logRows=[
+    ['세션ID','타임스탬프','학생ID','학년','차시','단원명','페이지','유형','유형레이블','단계번호','단계명','발화자','내용'],
+    ...logs.map(r=>[
+      r.session_id, r.timestamp, r.student_id, r.grade, r.lesson_id,
+      r.lesson_title, r.lesson_pages, r.mode, r.mode_label,
+      r.step, r.step_label, (r.role === 'assistant' ? 'AI' : r.role === 'user' ? '학생' : r.role), r.content
+    ])
+  ];
+
+  // 시트 2: 차시별 요약 (처치 충실도 사후 분석용)
+  const sessions={};
+  logs.forEach(r=>{
+    if(!sessions[r.session_id]){
+      sessions[r.session_id]={
+        session_id:r.session_id, student_id:r.student_id,
+        grade:r.grade, lesson_id:r.lesson_id, lesson_title:r.lesson_title,
+        mode:r.mode, mode_label:r.mode_label,
+        start_time:r.timestamp, end_time:r.timestamp,
+        total_turns:0, student_turns:0, ai_turns:0,
+        step1_turns:0, step2_turns:0, step3_turns:0
+      };
+    }
+    const s=sessions[r.session_id];
+    s.end_time=r.timestamp;
+    s.total_turns++;
+    if(r.role==='user') s.student_turns++;
+    else s.ai_turns++;
+    if(r.step===1||r.step==='1') s.step1_turns++;
+    else if(r.step===2||r.step==='2') s.step2_turns++;
+    else if(r.step===3||r.step==='3') s.step3_turns++;
+  });
+  const summaryRows=[
+    ['세션ID','학생ID','학년','차시','단원명','유형','유형레이블',
+     '시작시각','종료시각','총발화수','학생발화수','AI발화수',
+     'STEP1발화','STEP2발화','STEP3발화'],
+    ...Object.values(sessions).map(s=>[
+      s.session_id, s.student_id, s.grade, s.lesson_id, s.lesson_title,
+      s.mode, s.mode_label, s.start_time, s.end_time,
+      s.total_turns, s.student_turns, s.ai_turns,
+      s.step1_turns, s.step2_turns, s.step3_turns
+    ])
+  ];
+
+  // ── 시트3: 질적 코딩 워크시트 (단일 코더) ──
+  const studentUtterances = logs.filter(r => r.role==='user' && r.mode==='experiment');
+  const codingMap = {};
+  getCodingResults().forEach(c=>{ codingMap[c.timestamp]=c; });
+  const codingHeader=['발화번호','세션ID','학생ID','학년','차시','단원명','단계번호','단계명','발화내용','AI자동코드','AI코딩근거','최종코드(검토확정)'];
+  const codingData = studentUtterances.map((r,idx)=>{
+    const stored = codingMap[r.timestamp];
+    const aiCode = stored ? stored.code_ai : '';
+    // 최종코드: AI 자동코드를 값으로 채워 둠 → 검토 중 수정이 필요하면 해당 셀을 직접 덮어쓰기
+    return [idx+1,r.session_id,r.student_id,r.grade,r.lesson_id,r.lesson_title,r.step,r.step_label,r.content,aiCode,stored?stored.reason:'',aiCode];
+  });
+  const codingRows=[codingHeader,...codingData];
+
+  const wb=XLSX.utils.book_new();
+  const ws3=XLSX.utils.aoa_to_sheet(codingRows);
+  ws3['!cols']=[{wch:7},{wch:14},{wch:8},{wch:5},{wch:5},{wch:14},{wch:7},{wch:18},{wch:50},{wch:12},{wch:24},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(logRows),'\uC804\uCCB4\uB300\uD654\uB85C\uADF8');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(summaryRows),'\uCC28\uC2DC\uBCC4\uC694\uC57D');
+  XLSX.utils.book_append_sheet(wb,ws3,'\uC9C8\uC801\ucF54\uB529\uC6CC\uD06C\uC2DC\uD2B8');
+  XLSX.writeFile(wb,`AI\uD559\uC2B5\uAE30\uB85D_${kstFileDate()}.xlsx`);
+}
+function clearLogs(){
+  if(!confirm('모든 대화 기록을 삭제하시겠습니까?\n(코딩 결과·이행충실도 결과도 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다.)')) return;
+  localStorage.removeItem(LOG_KEY);
+  localStorage.removeItem(FIDELITY_KEY);
+  localStorage.removeItem(CODING_KEY);
+  renderLogs();
+  renderStats();
+  alert('삭제되었습니다.');
+}
+
+// ============================================================
+// 이행 충실도 자동 분석 (Claude API — 방향 B)
+// ============================================================
+
+function getFidelityResults(){
+  return JSON.parse(localStorage.getItem(FIDELITY_KEY)||'[]');
+}
+
+// 세션 목록 추출 (필터 적용)
+function getFilteredSessions(){
+  const g  = document.getElementById('fi-filter-grade')?.value  || '';
+  const m  = document.getElementById('fi-filter-mode')?.value   || '';
+  const l  = document.getElementById('fi-filter-lesson')?.value || '';
+  const logs = getLogs().filter(r=>{
+    if(g && r.grade !== g) return false;
+    if(m && r.mode  !== m) return false;
+    if(l && String(r.lesson_id) !== l) return false;
+    return true;
+  });
+  // session_id 기준으로 그룹핑
+  const map = {};
+  logs.forEach(r=>{
+    if(!map[r.session_id]) map[r.session_id] = {
+      session_id: r.session_id,
+      student_id: r.student_id,
+      grade: r.grade,
+      lesson_id: r.lesson_id,
+      lesson_title: r.lesson_title,
+      mode: r.mode,
+      mode_label: r.mode_label,
+      turns: []
+    };
+    map[r.session_id].turns.push(r);
+  });
+  return Object.values(map);
+}
+
+// Claude API 호출 — 단일 세션 분석
+async function analyzeSessionFidelity(session){
+  const PROXY_URL = getGasUrl();
+  const isExp  = session.mode === 'experiment';
+  const steps  = isExp
+    ? ['S1 자유 설명: 학생이 세션 초반에 오늘 배운 내용을 자발적으로 설명한 발화가 존재하는가',
+       'S2 AI 확인 질문: AI가 학생 설명의 오류·누락에 대해 소크라테스식 질문을 한 발화가 존재하는가',
+       'S3 추가 설명: AI의 소크라테스식 질문 이후 학생이 해당 개념을 추가로 설명한 발화가 존재하는가']
+    : ['Q1 질문 형성·정교화: 학생이 첫 질문을 입력한 뒤 AI의 명료화 되묻기에 응해 정교화된 질문을 재입력한 발화가 존재하는가',
+       'Q2 답변 탐색·핵심 표지: 학생이 AI 답변에서 핵심 키워드 또는 짧은 문장을 발췌·표지하여 직접 입력한 발화가 존재하는가',
+       'Q3 탐색적 질문 확장: 학생이 수업 범위 내 후속 질문을 2회 이상 추가로 입력한 발화가 존재하는가'];
+
+  // 대화 텍스트 구성 (최대 30턴)
+  const dialogue = session.turns.slice(0, 60).map(t=>
+    `[${t.role === 'user' ? '학생' : 'AI'}] ${t.content}`
+  ).join('\n');
+
+  const systemPrompt = `당신은 초등 과학 수업의 AI 학습 활동 이행 충실도를 평가하는 연구 보조자입니다.
+집단: ${session.mode_label} | ${session.grade}학년 ${session.lesson_id}차시 ${session.lesson_title}
+
+아래 대화 로그를 분석하여 각 단계의 충족 여부를 판정하십시오.
+반드시 아래 JSON 형식으로만 응답하십시오. 다른 텍스트는 일절 포함하지 마십시오.
+
+{
+  "steps": [
+    {
+      "step": "단계명",
+      "fulfilled": true 또는 false,
+      "score": 1 또는 0,
+      "evidence": "근거 발화를 20자 이내로 인용 (없으면 null)",
+      "reason": "판정 이유를 30자 이내로"
+    }
+  ],
+  "total_score": 충족된 단계 수,
+  "fidelity_pct": 충실도 퍼센트(0~100 정수),
+  "summary": "전체 세션 충실도 요약을 50자 이내로"
+}`;
+
+  const userPrompt = `판정 기준:\n${steps.map((s,i)=>`${i+1}. ${s}`).join('\n')}\n\n대화 로그:\n${dialogue}`;
+
+  // 프록시(Google Apps Script)를 통해 Anthropic API 호출
+  const payload = JSON.stringify({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 800,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userPrompt }]
+  });
+
+  const resp = await fetch(PROXY_URL + '?action=chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: payload
+  });
+  if(!resp.ok) throw new Error('서버 응답 오류 (HTTP ' + resp.status + ')');
+  const data = await resp.json();
+  if(data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+
+  const raw = data.content?.[0]?.text || '{}';
+  // JSON 파싱 — 마크다운 펜스 제거
+  const cleaned = raw.replace(/```json|```/g,'').trim();
+  const parsed  = JSON.parse(cleaned);
+  return {
+    ...parsed,
+    session_id:   session.session_id,
+    student_id:   session.student_id,
+    grade:        session.grade,
+    lesson_id:    session.lesson_id,
+    lesson_title: session.lesson_title,
+    mode:         session.mode,
+    mode_label:   session.mode_label,
+    analyzed_at:  kstNow()
+  };
+}
+
+// 분석 실행 메인 함수
+async function runFidelityAnalysis(){
+  const PROXY_URL = getGasUrl();
+  if(!PROXY_URL){ alert('프록시 URL이 설정되지 않았습니다.\n교사 패널 → 설정 탭에서 Google Apps Script URL을 입력해주세요.'); return; }
+  const sessions = getFilteredSessions();
+  if(!sessions.length){ alert('분석할 세션이 없습니다.'); return; }
+
+  // 이미 분석된 세션 ID 목록
+  const done = new Set(getFidelityResults().map(r=>r.session_id));
+  const todo = sessions.filter(s=> !done.has(s.session_id));
+
+  if(!todo.length){
+    alert('선택 조건의 모든 세션이 이미 분석되었습니다.\n다시 분석하려면 "결과 초기화" 후 실행하세요.');
+    renderFidelityResults(); return;
+  }
+
+  const btn  = document.getElementById('fi-run-btn');
+  const prog = document.getElementById('fi-progress');
+  btn.disabled = true;
+  prog.style.display = 'block';
+
+  const results = getFidelityResults();
+  let ok = 0, fail = 0;
+
+  for(let i = 0; i < todo.length; i++){
+    const s = todo[i];
+    prog.innerHTML = `⏳ 분석 중... (${i+1}/${todo.length}) — 학생 ${s.student_id}, ${s.grade}학년 ${s.lesson_id}차시`;
+    try{
+      const res = await analyzeSessionFidelity(s);
+      results.push(res);
+      ok++;
+    } catch(e){
+      results.push({
+        session_id: s.session_id, student_id: s.student_id,
+        grade: s.grade, lesson_id: s.lesson_id,
+        lesson_title: s.lesson_title, mode: s.mode, mode_label: s.mode_label,
+        analyzed_at: kstNow(),
+        error: e.message, total_score: null, fidelity_pct: null
+      });
+      fail++;
+    }
+    localStorage.setItem(FIDELITY_KEY, JSON.stringify(results));
+    // API 연속 호출 부하 방지
+    await new Promise(r=>setTimeout(r, 500));
+  }
+
+  prog.innerHTML = `✅ 완료: ${ok}개 성공${fail ? ` / ${fail}개 오류` : ''}`;
+  setTimeout(()=>{ prog.style.display='none'; }, 3000);
+  btn.disabled = false;
+  renderFidelityResults();
+}
+
+// 결과 렌더링 (학년·집단별 그룹 정렬)
+function renderFidelityResults(){
+  const area = document.getElementById('fi-result-area');
+  if(!area) return;
+  const results = getFidelityResults();
+  if(!results.length){
+    area.innerHTML = '<div class="empty-state">분석 결과가 없습니다. 위 버튼으로 자동 분석을 실행하세요.</div>';
+    return;
+  }
+
+  const avg = arr => arr.length ? Math.round(arr.reduce((s,r)=>s+r.fidelity_pct,0)/arr.length) : '-';
+  const valid = results.filter(r=>r.fidelity_pct!=null);
+  const expR  = valid.filter(r=>r.mode==='experiment');
+  const ctrlR = valid.filter(r=>r.mode==='control');
+
+  const summary = `
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="stat-card" style="flex:1;min-width:100px"><div class="stat-num">${results.length}</div><div class="stat-lbl">분석 차시</div></div>
+      <div class="stat-card" style="flex:1;min-width:100px"><div class="stat-num" style="color:var(--g)">${avg(expR)}%</div><div class="stat-lbl">유형A 평균 충실도</div></div>
+      <div class="stat-card" style="flex:1;min-width:100px"><div class="stat-num" style="color:var(--b)">${avg(ctrlR)}%</div><div class="stat-lbl">유형B 평균 충실도</div></div>
+      <div class="stat-card" style="flex:1;min-width:100px"><div class="stat-num">${avg(valid)}%</div><div class="stat-lbl">전체 평균</div></div>
+    </div>`;
+
+  // 학년·집단 순으로 그룹화
+  const GROUP_ORDER = [
+    {grade:'5', mode:'experiment', label:'5학년 실험집단 — 유형A', bg:'#E8F5E9', fc:'#1B5E2F'},
+    {grade:'6', mode:'experiment', label:'6학년 실험집단 — 유형A', bg:'#D7EED8', fc:'#1B5E2F'},
+    {grade:'5', mode:'control',    label:'5학년 통제집단 — 유형B', bg:'#E3F0FF', fc:'#0C3B6B'},
+    {grade:'6', mode:'control',    label:'6학년 통제집단 — 유형B', bg:'#D5E9FF', fc:'#0C3B6B'},
+  ];
+
+  let tbody = '';
+  GROUP_ORDER.forEach(g => {
+    const grp = results.filter(r=>r.grade===g.grade && r.mode===g.mode);
+    if(!grp.length) return;
+    // 그룹 헤더
+    tbody += `<tr><td colspan="9" style="background:${g.bg};color:${g.fc};font-weight:700;font-size:11px;padding:6px 10px;border-bottom:1px solid #ddd">${g.label}</td></tr>`;
+    grp.forEach(r=>{
+      if(r.error){
+        tbody += `<tr><td>${r.student_id}</td><td>${r.grade}학년</td><td>${r.lesson_id}차시<br><span style="font-size:10px;color:var(--muted)">${r.lesson_title||''}</span></td><td><span class="${r.mode==='experiment'?'tag-exp':'tag-ctrl'}">${r.mode==='experiment'?'유형A':'유형B'}</span></td><td colspan="5" style="color:var(--red);font-size:11px">오류: ${r.error}</td></tr>`;
+        return;
+      }
+      const steps = r.steps||[];
+      const stepCells = steps.map(s=>`<td style="text-align:center"><span title="${(s.reason||'')} / 근거: ${s.evidence||'없음'}">${s.fulfilled?'✅':'❌'}</span></td>`).join('');
+      const pctColor = r.fidelity_pct>=80?'var(--g)':r.fidelity_pct>=50?'var(--amb)':'var(--red)';
+      tbody += `<tr>
+        <td>${r.student_id}</td>
+        <td>${r.grade}학년</td>
+        <td>${r.lesson_id}차시<br><span style="font-size:10px;color:var(--muted)">${r.lesson_title||''}</span></td>
+        <td><span class="${r.mode==='experiment'?'tag-exp':'tag-ctrl'}">${r.mode==='experiment'?'유형A':'유형B'}</span></td>
+        ${stepCells}
+        <td style="text-align:center;font-weight:700;color:${pctColor}">${r.fidelity_pct}%</td>
+        <td style="font-size:11px;color:var(--muted)">${r.summary||''}</td>
+      </tr>`;
+    });
+    // 소계
+    const gValid = grp.filter(r=>r.fidelity_pct!=null);
+    const gOk = gValid.filter(r=>r.fidelity_pct>=67).length;
+    const gAvg = gValid.length ? Math.round(gValid.reduce((s,r)=>s+r.fidelity_pct,0)/gValid.length) : '-';
+    tbody += `<tr style="background:${g.bg}"><td colspan="4" style="color:${g.fc};font-weight:600;font-size:11px;padding:5px 10px">소계 — 참여자 ${grp.length}명</td><td colspan="3" style="text-align:center;font-size:11px;color:${g.fc};font-weight:600">처치충실 차시 ${gOk}개</td><td style="text-align:center;font-weight:700;color:${g.fc}">${gAvg}%</td><td></td></tr>`;
+  });
+
+  area.innerHTML = summary + `
+    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px">
+      <table>
+        <thead><tr>
+          <th>학생ID</th><th>학년</th><th>차시</th><th>유형</th>
+          <th>STEP1/Q1</th><th>STEP2/Q2</th><th>STEP3/Q3</th>
+          <th>충실도</th><th>요약</th>
+        </tr></thead>
+        <tbody>${tbody}</tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px">✅ 아이콘에 마우스를 올리면 판정 근거를 확인할 수 있습니다.</div>`;
+}
+
+// 이행충실도 결과 Excel 내보내기
+function exportFidelityXLSX(){
+  const results = getFidelityResults();
+  if(!results.length){ alert('내보낼 분석 결과가 없습니다.'); return; }
+
+  // ── 시트1: 차시별충실도 ── (예시 파일과 동일한 컬럼 구조)
+  const header = [
+    '세션ID','학생ID','학년','차시명','집단',
+    'S1/Q1 충족','S1/Q1 근거 발화 인용',
+    'S2/Q2 충족','S2/Q2 근거 발화 인용',
+    'S3/Q3 충족','S3/Q3 근거 발화 인용',
+    '충족 단계','충실도(%)','판정 요약','분석 시각'
+  ];
+
+  // 학년·집단 순서로 정렬
+  const ORDER = [
+    {grade:'5',mode:'experiment'}, {grade:'6',mode:'experiment'},
+    {grade:'5',mode:'control'},    {grade:'6',mode:'control'},
+  ];
+  const sorted = [];
+  ORDER.forEach(g=>{
+    results.filter(r=>r.grade===g.grade&&r.mode===g.mode).forEach(r=>sorted.push(r));
+  });
+  // 미분류(학년 외) 항목도 포함
+  results.forEach(r=>{ if(!sorted.includes(r)) sorted.push(r); });
+
+  const dataRows = sorted.map(r=>{
+    const s = r.steps || [];
+    const fmt = v => v===1?1:v===0?0:'';
+    return [
+      r.session_id, r.student_id, `${r.grade}학년`,
+      `${r.lesson_id}차시 ${r.lesson_title||''}`.trim(),
+      r.mode_label||r.mode,
+      fmt(s[0]?.score), s[0]?.evidence||'',
+      fmt(s[1]?.score), s[1]?.evidence||'',
+      fmt(s[2]?.score), s[2]?.evidence||'',
+      r.total_score??'',
+      r.fidelity_pct!=null ? r.fidelity_pct+'%' : '',
+      r.summary||r.error||'',
+      r.analyzed_at||''
+    ];
+  });
+
+  // ── 시트2: 집단별요약 ── (학년별 행 분리 + 처치충실 차시 수·비율)
+  const stepOkRate = (arr,i) => {
+    if(!arr.length) return '';
+    const ok = arr.reduce((s,r)=>s+(r.steps?.[i]?.score||0),0);
+    return (ok/arr.length*100).toFixed(1)+'%';
+  };
+  const avgPct = arr => arr.length
+    ? (arr.reduce((s,r)=>s+r.fidelity_pct,0)/arr.length).toFixed(1)+'%' : '';
+  const okCount = arr => arr.filter(r=>r.fidelity_pct>=67).length;
+  const okRate  = arr => arr.length ? (okCount(arr)/arr.length*100).toFixed(1)+'%' : '';
+  const note    = arr => arr.length && parseFloat(avgPct(arr))>=67 ? '처치 일관성 확보' : '검토 필요';
+
+  const sumHdr = [
+    '집단 구분','학년','차시 수(전체)','처치충실 차시 수','처치충실 비율(%)',
+    'STEP1/Q1 충족율(%)','STEP2/Q2 충족율(%)','STEP3/Q3 충족율(%)','평균 충실도(%)','비고'
+  ];
+
+  const valid = r => r.fidelity_pct!=null;
+  const grp = (grade, mode) => results.filter(r=>r.grade===grade&&r.mode===mode&&valid(r));
+
+  const g5A = grp('5','experiment'), g6A = grp('6','experiment');
+  const g5B = grp('5','control'),    g6B = grp('6','control');
+  const gA  = [...g5A,...g6A],       gB  = [...g5B,...g6B];
+  const all = results.filter(valid);
+
+  const makeRow = (label, grade, arr) => [
+    label, grade, arr.length, okCount(arr), okRate(arr),
+    stepOkRate(arr,0), stepOkRate(arr,1), stepOkRate(arr,2), avgPct(arr), note(arr)
+  ];
+
+  const summaryRows = [
+    sumHdr,
+    makeRow('5학년 실험집단 — 유형A','5학년',g5A),
+    makeRow('6학년 실험집단 — 유형A','6학년',g6A),
+    makeRow('5학년 통제집단 — 유형B','5학년',g5B),
+    makeRow('6학년 통제집단 — 유형B','6학년',g6B),
+    [],  // 빈 행 구분
+    makeRow('유형A 합계 (실험집단, 5+6학년)','5+6학년',gA),
+    makeRow('유형B 합계 (통제집단, 5+6학년)','5+6학년',gB),
+    [],
+    makeRow('전체 합계 (유형A+유형B, 5+6학년)','전체',all),
+    [],
+    ['【용어 설명】'],
+    ['• 차시 수: 학생 1명이 1회 활동한 기록 단위'],
+    ['• 처치충실 차시 수: 충실도 67% 이상(3단계 중 2단계 이상 충족)인 차시 수'],
+    ['• 처치충실 비율(%): 처치충실 차시 수 ÷ 전체 차시 수 × 100'],
+    ['• 평균 충실도(%): 모든 차시 충실도 점수의 산술평균'],
+    ['• STEP별 충족율: 해당 STEP이 충족된 차시 수 ÷ 전체 차시 수 × 100'],
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([header,...dataRows]), '차시별충실도');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryRows), '집단별요약');
+  XLSX.writeFile(wb, `이행충실도_${kstFileDate()}.xlsx`);
+}
+
+function clearFidelityResults(){
+  if(!confirm('분석 결과를 모두 초기화하시겠습니까?')) return;
+  localStorage.removeItem(FIDELITY_KEY);
+  renderFidelityResults();
+  alert('초기화되었습니다.');
+}
+
+// ============================================================
+// SYSTEM PROMPT  (부록 H 상태 전환 규칙 완전 반영)
+// ============================================================
+function buildPrompt(){
+  const lesson = getLesson();
+  const steps  = getSteps();
+  const step   = steps[state.currentStep - 1];
+  const gd     = GRADES[state.grade];
+  const cc     = lesson.concepts.map((c,i)=>`${i+1}. ${c}`).join('\n');
+  const mc     = lesson.misconceptions.map((m,i)=>`${i+1}. ${m}`).join('\n');
+
+  /* ── 집단별 역할 지시 ── */
+  const expRole = `
+==== [실험집단 전용] AI 역할: 소크라테스식 질문 유도자 (3단계 구조) ====
+
+## 핵심 원칙
+- 너는 오늘 "${lesson.title}" 수업을 처음 들은 초등학생이야.
+- 정답을 절대 직접 말하지 않는다.
+- 학생이 스스로 설명하고 답을 찾도록 질문만 한다.
+- ⚠ 절대 금지: 오늘 차시(${lesson.title}) 교과서 범위 안의 개념만 다룬다. 다른 차시(이번 수업에서 배우지 않은 내용)를 먼저 언급하거나 유도하지 않는다.
+
+## 학생 발화 분석 의무
+매 학생 발화 후 반드시 아래를 점검한다:
+1. 학생이 이미 정확히 설명한 개념 → 목록에 기록, 다시 묻지 않는다
+2. 학생이 언급했으나 불완전하거나 오개념이 포함된 개념 → 소크라테스식 질문 대상
+3. 학생이 아직 언급하지 않은 오늘 차시 핵심 개념 → 미비 목록에 추가
+후속 질문은 반드시 2번·3번에 해당하는 개념에 대해서만 한다.
+
+## 3단계 상태 전환 규칙 (현재: ${state.currentStep}단계)
+
+S1 (자유 설명 — 1단계, 7분):
+- 학생 발화를 끊지 않고 경청한다.
+- 학생이 설명을 마치면 내부적으로 「미비 목록」을 생성한다.
+  우선순위: 오개념 > 누락 개념(중요도 순) > 불완전 개념
+- 짧게 "계속 설명해 줘" 또는 "더 있어?" 정도만 반응하며 끝까지 경청.
+
+S2 (AI 확인 질문 — 2단계, 7분):
+- S1에서 생성한 「미비 목록」을 기반으로 질문을 한다.
+- 한 번에 하나의 질문만 한다.
+- 오개념 발견: "~라고 했는데, [반례 상황]에서는 어떻게 되는 걸까?"
+- 누락 개념: "[오늘 차시 연결 현상]은 어떻게 되는 걸까?"
+- 학생이 2회 시도 후 답 못 찾음 → 키워드 힌트만 제공:
+  "[개념어] 기억해? 그게 뭔지 설명해줄 수 있어?"
+- 학생이 설명하면 미비 목록의 다음 미처리 항목으로 이동.
+- ⚠ 절대 금지: 이미 질문한 개념, 학생이 이미 정확히 답한 개념을 다시 묻지 않는다. 대화 이력을 반드시 확인하여 중복 질문·중복 유도 금지.
+- ⚠ 절대 금지: 직전 학생 발화에 이미 포함된 정보(위치·방향 등)는 재질문 금지. (예: 학생이 "왼쪽 가슴"이라 답했으면 "가슴의 어느쪽?"처럼 좌/우를 다시 묻지 않는다.)
+- ⚠ 절대 금지: "처음부터 다시 설명해줘", "전체 과정을 정리해봐", "한번 정리해볼까요" 같은 전체 재설명 요구 금지.
+- ⚠ 절대 금지: 다른 차시 내용(줄기, 잎, 꽃 등 오늘 수업에서 다루지 않은 개념)을 질문 소재로 사용 금지.
+
+S3 (보완 설명 — 3단계, 6분):
+- 학생이 S2에서 다룬 개념들을 자기 언어로 다시 설명하도록 유도.
+- "아까 [개념]에 대해 이야기했는데, 이제 어떻게 설명할 수 있어?"
+- 전체 재설명은 요구하지 않는다. S2에서 다룬 핵심 개념만 확인.
+- 학생의 설명이 충분하면 격려로 마무리.
+- ⚠ 절대 금지: S2에서 이미 다룬 개념을 S3에서 또 다른 방식으로 반복 요청하지 않는다.
+- ⚠ 절대 금지: 다른 차시 내용을 보완 설명 소재로 사용 금지.
+
+## 오개념 처리 (최우선 — S2에서 반드시 다룸)
+아래 오개념이 학생 발화에서 감지되면 즉시 소크라테스식 반례 질문으로 대응.
+정답을 직접 말하는 것("그건 틀렸어", "사실 ~이야")은 절대 금지.
+${mc}`;
+
+  const ctrlRole = `
+==== [통제집단 전용] AI 역할: 정보 제공자·학습 안내자 (3단계 구조) ====
+
+## 핵심 원칙 — 역할 구분 (절대 준수)
+- 이 활동에서 질문을 먼저 만드는 사람은 학생이다.
+- AI는 (1) 학생 질문의 의도를 명료화하고 (2) 정확한 정보를 답변하며 (3) 핵심 포착과 탐색 확장을 안내하는 역할을 한다.
+- ⚠ 절대 금지: 오늘 차시(${lesson.title}) 교과서 범위 밖의 내용(다른 차시에서 배우는 개념)을 먼저 언급하거나 유도하지 않는다.
+
+## 3단계 State Machine (현재: ${state.currentStep}단계)
+
+S1 (질문 형성·정교화 — 1단계):
+- 학생이 첫 질문을 입력하면: 곧바로 답하지 않는다.
+- 대신 명료화 요청(되묻기)으로 학생이 질문 의도를 더 명확히 표현하도록 이끈다.
+  예: "이 질문은 [수업 개념] 부분에 관한 것이지? 어떤 점이 가장 알고 싶어?"
+- 학생이 정교화된 질문을 재입력하면 → S2로 전환.
+- 학생이 설명 없이 짧게만 반응하는 경우: "오늘 배운 내용에서 가장 궁금한 게 뭔지 좀 더 자세히 말해줄 수 있어?" 로 유도.
+
+S2 (답변 탐색·핵심 표지 — 2단계):
+- 정교화된 질문에 대해 교과서 핵심 개념 범위 안에서 충실하게 답변한다.
+- 답변 직후 반드시 핵심 포착 안내를 덧붙인다.
+  예: "이 답변에서 가장 중요한 부분이 어디라고 생각해? 한두 단어나 짧은 문장으로 알려줄래?"
+- 학생이 핵심 키워드 또는 짧은 문장을 발췌·표지하여 입력하면 → S3으로 전환.
+- ⚠ 절대 금지: 핵심 포착 안내 없이 "또 궁금한 게 있어?" 로만 마무리하는 것.
+- 범위 이탈(다른 차시 내용): "그건 다른 시간에 배울 내용이야. 오늘 배운 ${lesson.title} 내용에서 궁금한 게 있으면 물어봐."
+
+S3 (탐색적 질문 확장 — 3단계):
+- 학생의 핵심 표지가 입력되면 후속 질문 유형을 안내하며 정보망 확장을 유도한다.
+  예: "왜 그런지 더 묻거나, 비슷한 개념과 어떻게 다른지 물어봐도 좋아."
+- 안내 카드의 세 질문 유형을 환기한다: '왜?'형(원인·이유) / '그러면 ~는?'형(적용·확장) / '~와 ~는 어떻게 달라?'형(비교)
+- 학생이 후속 질문을 보내오면 교과서 범위 안에서 충실히 답변한다.
+- 후속 질문 2회 이상 확인 후 자연스럽게 마무리.
+- ⚠ 절대 금지: 학생이 아직 표지를 입력하지 않았는데 S3 안내를 먼저 하는 것.
+
+## 오개념 처리
+학생 발화에 오개념이 감지되면: "사실 [올바른 개념]이야" 형식으로 자연스럽게 교정 후 핵심 포착 안내 또는 탐색 확장 안내로 이어간다.
+
+## 중복 방지
+- ⚠ 절대 금지: 학생이 이미 정확히 답하거나 표지한 내용을 다시 확인하거나 재입력 요구하지 않는다.
+- 후속 질문은 항상 학생이 아직 탐색하지 않은 개념에 대해서만 이어간다.
+${mc}`;
+
+  const role = state.groupType === 'experiment' ? expRole : ctrlRole;
+
+  return `너는 초등학교 ${state.grade}학년 과학 수업 AI 시스템이다.
+오늘 수업: ${gd.subject} / ${lesson.title} (교과서 ${lesson.pages})
+
+${role}
+
+==== 교과서 핵심 개념 — RAG 컨텍스트 (이 범위 내에서만 답변) ====
+${cc}
+
+${lesson.experiment ? `==== 탐구 활동 내용 ====\n${lesson.experiment}\n` : ''}
+==== 안전 장치 (절대 준수) ====
+1. 교과서 범위 이탈: 오늘 차시(${lesson.title}) 교과서에 없는 내용, 또는 다른 차시에서 다루는 내용 → "오늘 배운 내용 범위 안에서 이야기해봐"로 리다이렉트. 다른 차시 내용을 먼저 언급하거나 유도하지 않는다.
+2. 부적절 발화(욕설·무관 내용·개인정보): "오늘 과학 수업에 대해 이야기해봐"로 리다이렉트
+3. 학생 개인정보 수집·기록 절대 금지
+4. 응답은 3~5문장 이내, 초등 ${state.grade}학년 수준 언어, 한국어만 사용`;
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+// 타이머 — 세션 시작 시 1회만 구동 (전체 15분 단일, 단계 이동 없음)
+// DOM 부분 업데이트만 수행 — 전체 render() 금지 (커서 버벅임 방지)
+// ============================================================
+function startSessionTimer(){
+  clearInterval(state.timerInterval);
+  state.timer    = 900;   // 15분 = 900초
+  state.timerMax = 900;
+  state.timerInterval = setInterval(()=>{
+    state.timer--;
+    if(state.timer <= 0){
+      clearInterval(state.timerInterval);
+      state.showStepDone = true;
+      render(); // 완료 배너 + 마무리 버튼 활성화
+      return;
+    }
+    updateTimerDOM();
+  }, 1000);
+}
+
+function updateTimerDOM(){
+  const tm  = state.timer;
+  const mm  = Math.floor(tm / 60);
+  const ss  = tm % 60;
+  const pct = (tm / state.timerMax) * 100;
+  const tc  = tm < 60 ? 'var(--red)' : tm < 120 ? 'var(--amb)' : 'var(--g)';
+
+  const timerEl = document.getElementById('timer-display');
+  if(timerEl){
+    timerEl.textContent = `${mm}:${String(ss).padStart(2,'0')}`;
+    timerEl.style.color = tc;
+  }
+  const fillEl = document.getElementById('timer-fill');
+  if(fillEl){
+    fillEl.style.width = pct + '%';
+    fillEl.style.background = tc;
+  }
+
+  // 10분 경과(잔여 300초) 시점에 마무리 버튼 실시간 활성화
+  if(tm <= 300){
+    const btn = document.getElementById('finish-btn');
+    if(btn && btn.disabled){
+      btn.disabled = false;
+      btn.style.cursor = 'pointer';
+      btn.style.border = '1.5px solid var(--g)';
+      btn.style.background = 'var(--gl)';
+      btn.style.color = 'var(--gd)';
+    }
+  }
+  // 15분(타이머 종료 시) 마무리 버튼 활성 렌더 (showStepDone 기반 render로 처리됨)
+}
+
+function goToStep(num){
+  const lesson = getLesson();
+  const steps  = getSteps();
+  const g      = steps[num-1].greeting(state.studentName, lesson);
+  state.currentStep  = num;
+  state.showStepDone = false;
+  state.displayMessages.push({role:'assistant', content:g});
+  state.apiMessages.push({role:'assistant', content:g});
+  logEntry('assistant', g, num, steps[num-1].label);
+  // 타이머는 세션 최초 진입(1단계)에서만 시작
+  if(num === 1) startSessionTimer();
+  render();
+  scrollEnd();
+}
+
+function scrollEnd(){
+  setTimeout(()=>{const e=document.getElementById('chat-end');if(e)e.scrollIntoView({behavior:'smooth'});},60);
+}
+
+// ============================================================
+// SEND MESSAGE
+// ============================================================
+async function sendMessage(){
+  const text=state.inputText.trim();
+  if(!text||state.isLoading) return;
+  state.inputText='';
+  state.isLoading=true;
+  state.userMsgCount++;    // 학생 발화 수 누적
+  autoTrackStep();         // 단계 자동 추적 (로그 태깅용)
+  const uMsg={role:'user',content:text};
+  state.displayMessages.push(uMsg);
+  state.apiMessages.push(uMsg);
+  logEntry('user', text);
+  render();
+  scrollEnd();
+
+  try{
+    // 프록시(Google Apps Script)를 통해 Anthropic API 호출
+    // API 키는 프록시 서버 내부에만 존재 — 브라우저에 노출되지 않음
+    const payload = JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 600,
+      system: buildPrompt(),
+      messages: state.apiMessages.slice(-10)
+    });
+
+    // Cloudflare Workers 프록시 호출 (CORS 완전 허용)
+    const gasUrl = getGasUrl();
+    if(!gasUrl) throw new Error("프록시 URL이 설정되지 않았습니다. 교사 패널에서 URL을 입력해주세요.");
+
+    const resp = await fetch(gasUrl + '?action=chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload
+    });
+    if(!resp.ok) throw new Error('서버 응답 오류 (HTTP ' + resp.status + ')');
+    const data = await resp.json();
+
+    if(data.ok === false) throw new Error(data.error || '프록시 오류');
+    if(data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    const aiText = data.content?.[0]?.text || '응답을 받지 못했어요. 다시 시도해주세요.';
+    const aMsg={role:'assistant',content:aiText};
+    state.displayMessages.push(aMsg);
+    state.apiMessages.push(aMsg);
+    logEntry('assistant', aiText);
+  } catch(e){
+    const errText=`연결 오류가 발생했어요. (${e.message||e.name||'네트워크 오류'})`;
+    state.displayMessages.push({role:'assistant',content:errText});
+    logEntry('assistant', errText);
+  }
+  state.isLoading=false;
+  render();
+  scrollEnd();
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function render(){
+  const sc=document.getElementById('screen');
+  if(!sc) return;
+  if(state.phase==='setup') sc.innerHTML=rSetup();
+  else if(state.phase==='chat') sc.innerHTML=rChat();
+  else sc.innerHTML=rDone();
+  attachEv();
+}
+
+function rSetup(){
+  const gd=GRADES[state.grade];
+  const opts=gd.lessons.map(l=>
+    `<option value="${l.id}" ${state.lessonId===l.id?'selected':''}>${l.id}차시: ${l.title} (${l.pages})</option>`
+  ).join('');
+  return `<div class="card" style="max-width:500px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="font-size:44px;margin-bottom:10px">🔬</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.65">학년과 오늘 배운 차시를 선택하고<br>아래 버튼을 눌러 시작해보세요!</p>
+    </div>
+
+    <span class="slabel">학년 선택</span>
+    <div class="grade-row">
+      <button class="grade-btn ${state.grade==='5'?'on':''}" data-grade="5">
+        <span class="gnum">5학년</span>
+        <span class="gsub">우리 몸의 구조와 기능</span>
+      </button>
+      <button class="grade-btn ${state.grade==='6'?'on':''}" data-grade="6">
+        <span class="gnum">6학년</span>
+        <span class="gsub">식물의 구조와 기능</span>
+      </button>
+    </div>
+
+    <span class="slabel">오늘 배운 차시</span>
+    <select id="lesson-sel">${opts}</select>
+
+    <span class="slabel">학생 아이디</span>
+    <input type="text" id="name-inp" placeholder="예: 6-1-01" value="${state.studentName}">
+
+    <span class="slabel">활동 선택</span>
+    <div class="mode-row">
+      <button class="mode-btn green" id="btn-exp">
+        <span class="ico">🧑‍🎓</span>
+        <span class="mt">AI는 오늘 과학 수업을<br>처음 들은 학생</span>
+        <span class="ms">내가 선생님이 되어<br>AI에게 설명해요!</span>
+      </button>
+      <button class="mode-btn blue" id="btn-ctrl">
+        <span class="ico">👨‍🏫</span>
+        <span class="mt">AI는 친절한<br>과학 선생님</span>
+        <span class="ms">AI에게 질문하며<br>함께 공부해요!</span>
+      </button>
+    </div>
+
+    <p class="teacher-link" onclick="openTeacher()">⚙ 교사 설정</p>
+  </div>`;
+}
+
+function rChat(){
+  const lesson=getLesson();
+  const tm=state.timer;
+  const mm=Math.floor(tm/60),ss=tm%60;
+  const pct=(tm/(state.timerMax||900))*100;
+  const tc=tm<60?'var(--red)':tm<120?'var(--amb)':'var(--g)';
+
+  const bubs=state.displayMessages.map(m=>
+    m.role==='assistant'
+      ?`<div class="mai"><div class="aico">${state.groupType==='experiment'?'🧑‍🎓':'👨‍🏫'}</div><div class="bai">${m.content.replace(/\n/g,'<br>')}</div></div>`
+      :`<div class="muser"><div class="buser">${m.content.replace(/\n/g,'<br>')}</div></div>`
+  ).join('');
+
+  const typing=state.isLoading
+    ?`<div class="mai"><div class="aico">${state.groupType==='experiment'?'🧑‍🎓':'👨‍🏫'}</div><div class="bai"><div class="typing"><span></span><span></span><span></span></div></div></div>`:'';
+
+  // 10분 경과(잔여 5분 = 300초 이하) 후 마무리 버튼 활성화
+  const finishEnabled = state.timer <= 300;
+  const finishBtn = `
+    <div style="margin-top:6px">
+      <button id="finish-btn"
+        ${finishEnabled ? '' : 'disabled'}
+        style="width:100%;padding:11px 0;border-radius:10px;font-size:13px;font-weight:700;cursor:${finishEnabled?'pointer':'default'};font-family:inherit;border:1.5px solid ${finishEnabled?'var(--g)':'var(--border)'};background:${finishEnabled?'var(--gl)':'#f9f9f7'};color:${finishEnabled?'var(--gd)':'var(--muted)'};">
+        ✅ 활동 마무리하기
+      </button>
+    </div>`;
+
+  // 15분 완료 시 마무리 버튼 활성 (타이머 종료 전까지 비활성 표시)
+  // 상단 단계 안내 배너 (집단별)
+  const isExp = state.groupType === 'experiment';
+  const stepGuide = isExp ? `
+    <div class="step-guide step-guide-exp">
+      <div class="sg-title">🧑‍🎓 AI 설명하기 — 오늘의 3단계</div>
+      <div class="sg-steps">
+        <div class="sg-step">
+          <div class="sg-num">1</div>
+          <div class="sg-body">
+            <div class="sg-label">자유 설명</div>
+            <div class="sg-desc">AI에게 오늘 배운 내용을<br>내 말로 설명해요</div>
+          </div>
+        </div>
+        <div class="sg-arrow">→</div>
+        <div class="sg-step">
+          <div class="sg-num">2</div>
+          <div class="sg-body">
+            <div class="sg-label">AI 질문 답하기</div>
+            <div class="sg-desc">AI의 질문에<br>생각하며 답해요</div>
+          </div>
+        </div>
+        <div class="sg-arrow">→</div>
+        <div class="sg-step">
+          <div class="sg-num">3</div>
+          <div class="sg-body">
+            <div class="sg-label">보완 설명</div>
+            <div class="sg-desc">빠진 개념을 찾아<br>다시 설명해요</div>
+          </div>
+        </div>
+      </div>
+    </div>` : `
+    <div class="step-guide step-guide-ctrl">
+      <div class="sg-title">👨‍🏫 AI 질문하기 — 오늘의 3단계</div>
+      <div class="sg-steps">
+        <div class="sg-step">
+          <div class="sg-num">1</div>
+          <div class="sg-body">
+            <div class="sg-label">궁금한 거 질문하기</div>
+            <div class="sg-desc">오늘 배운 내용 중<br>궁금한 게 있으면 질문해요!</div>
+          </div>
+        </div>
+        <div class="sg-arrow">→</div>
+        <div class="sg-step">
+          <div class="sg-num">2</div>
+          <div class="sg-body">
+            <div class="sg-label">중요한 내용 찾기</div>
+            <div class="sg-desc">답변을 읽고 "이게 핵심이다!"<br>싶은 부분을 말해줘요!</div>
+          </div>
+        </div>
+        <div class="sg-arrow">→</div>
+        <div class="sg-step">
+          <div class="sg-num">3</div>
+          <div class="sg-body">
+            <div class="sg-label">더 깊이 알아보기</div>
+            <div class="sg-desc">또 궁금한 게 생기면<br>계속 질문해봐요!</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  return `<div class="chat-wrap">
+    <div class="chat-hdr">
+      <div class="ch-top">
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="back-home-btn" title="처음 화면으로" style="padding:5px 10px;background:#fff;border:1.5px solid var(--border);border-radius:7px;font-size:12px;color:var(--muted);cursor:pointer;font-family:inherit;flex-shrink:0;">← 처음으로</button>
+          <span class="ch-info">${state.grade}학년 · ${lesson.title}</span>
+        </div>
+        <span id="timer-display" style="font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:${tc}">${mm}:${String(ss).padStart(2,'0')}</span>
+      </div>
+      <div class="pbar"><div id="timer-fill" class="pfill" style="width:${pct}%;background:${tc}"></div></div>
+    </div>
+    ${stepGuide}
+    <div class="msgs" id="chat-msgs">${bubs}${typing}<div id="chat-end"></div></div>
+    <div class="inp-area">
+      <div class="inp-row">
+        <input type="text" id="msg-inp" placeholder="메시지를 입력하세요..." value="${state.inputText}" ${state.isLoading?'disabled':''}>
+        <button id="send-btn" class="sbtn" ${(!state.inputText.trim()||state.isLoading)?'disabled':''}>전송</button>
+      </div>
+      ${finishBtn}
+    </div>
+  </div>`;
+}
+
+function rDone(){
+  const syncing = !!getGasUrl();
+  return `<div class="card fin">
+    <div class="fin-ico">🎉</div>
+    <h2>활동을 모두 마쳤어요!</h2>
+    <p>오늘도 열심히 공부했어요!<br>선생님께 완료 사실을 알려주세요.</p>
+    ${syncing ? `<div style="background:var(--gl);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--gd);margin-bottom:14px">📊 대화 기록이 Google Sheets로 자동 전송되었습니다.</div>` : ''}
+    <button id="restart-btn" class="rst-btn">🏠 홈 화면으로 돌아가기</button>
+  </div>`;
+}
+
+// ============================================================
+// EVENTS  — 이벤트 위임(delegation) 방식으로 매 render 시 재등록 문제 해결
+// ============================================================
+
+// 채팅 입력창 이벤트는 한 번만 등록 (커서 손실 방지 핵심)
+let chatInputBound = false;
+
+function bindChatInput(){
+  if(chatInputBound) return;
+  chatInputBound = true;
+
+  // 이벤트 위임: document에 한 번만 등록
+  document.addEventListener('input', e=>{
+    if(e.target.id === 'msg-inp'){
+      state.inputText = e.target.value;
+      const sb = document.getElementById('send-btn');
+      if(sb) sb.disabled = !e.target.value.trim();
+    }
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.target.id === 'msg-inp' && e.key === 'Enter'){
+      e.preventDefault();
+      sendMessage();
+    }
+    // 오버레이 Enter 처리
+    if(e.target.id !== 'msg-inp'){
+      const to = document.getElementById('teacher-ov');
+      const ko = document.getElementById('key-ov');
+      if(to && to.style.display==='flex'){
+        if(e.key==='Enter' && document.getElementById('teacher-pin-area').style.display!=='none') checkPin();
+      } else if(ko && ko.style.display!=='none' && e.key==='Enter') confirmKey();
+    }
+  });
+  document.addEventListener('click', e=>{
+    const id = e.target.id || e.target.closest('[id]')?.id;
+    if(id === 'send-btn') sendMessage();
+    if(id === 'back-home-btn'){
+      if(confirm('처음 화면으로 돌아갈까요?\n(현재까지 대화 기록은 저장됩니다)')){
+        clearInterval(state.timerInterval);
+        chatInputBound=false;
+        state={phase:'setup',grade:state.grade,lessonId:state.lessonId,groupType:'experiment',
+          studentName:'',sessionId:'',currentStep:1,timer:900,
+          timerMax:900, timerInterval:null,
+          displayMessages:[],apiMessages:[],inputText:'',isLoading:false,showStepDone:false,
+          userMsgCount:0};
+        render();
+      }
+    }
+    if(id === 'finish-btn'){
+      if(state.timer > 300) return; // 10분 미경과 시 무시
+      clearInterval(state.timerInterval);
+      state.phase='done';
+      uploadSessionToSheets(state.sessionId);
+      autoCodeSession(state.sessionId);
+      render();
+    }
+    if(id === 'next-step-btn'){
+      // 타이머 종료 → 활동 종료만 (단계 이동 없음)
+      clearInterval(state.timerInterval);
+      state.phase='done';
+      uploadSessionToSheets(state.sessionId); // Google Sheets 자동 전송
+      autoCodeSession(state.sessionId);
+      render();
+    }
+    if(id === 'restart-btn'){
+      clearInterval(state.timerInterval);
+      chatInputBound=false;
+      state={phase:'setup',grade:'5',lessonId:1,groupType:'experiment',
+        studentName:'',sessionId:'',currentStep:1,timer:900,
+        timerMax:900, timerInterval:null,
+        displayMessages:[],apiMessages:[],inputText:'',isLoading:false,showStepDone:false,
+        userMsgCount:0};
+      render();
+    }
+    if(id === 'btn-exp' || e.target.closest('#btn-exp')) startModeFromBtn('experiment');
+    if(id === 'btn-ctrl' || e.target.closest('#btn-ctrl')) startModeFromBtn('control');
+  });
+  // 학년 버튼 위임
+  document.addEventListener('click', e=>{
+    const gb = e.target.closest('[data-grade]');
+    if(gb){state.grade=gb.dataset.grade;state.lessonId=1;render();}
+  });
+}
+
+function startModeFromBtn(mode){
+  const ls=document.getElementById('lesson-sel');
+  if(ls) state.lessonId=parseInt(ls.value);
+  const ni=document.getElementById('name-inp');
+  const nameVal=(ni ? ni.value : (state.studentName||'')).trim();
+  if(!nameVal){
+    alert('학생 아이디를 먼저 입력해주세요. (예: 6-1-01)');
+    if(ni){ ni.focus(); ni.style.borderColor='var(--red)'; }
+    return;
+  }
+  state.studentName=nameVal;
+  state.groupType=mode;
+  state.sessionId=genSessionId();
+  state.phase='chat';
+  state.displayMessages=[];
+  state.apiMessages=[];
+  state.currentStep=1;
+  state.userMsgCount=0;
+  state.showStepDone=false;
+  goToStep(1);
+}
+
+function attachEv(){
+  // 설정 화면 전용 요소만 직접 등록 (chat 화면은 위임 처리)
+  const ls=document.getElementById('lesson-sel');
+  if(ls) ls.onchange=e=>state.lessonId=parseInt(e.target.value);
+  const ni=document.getElementById('name-inp');
+  if(ni) ni.oninput=e=>{ state.studentName=e.target.value; e.target.style.borderColor=''; };
+
+  // 채팅 진입 후 입력창 포커스
+  const mi=document.getElementById('msg-inp');
+  if(mi && !state.isLoading) setTimeout(()=>{ if(document.activeElement!==mi) mi.focus(); },30);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load',()=>{
+  // 프록시 방식: API 키 입력 불필요 — 키 입력 오버레이 항상 숨김
+  document.getElementById('key-ov').style.display='none';
+  bindChatInput();
+  render();
+});
+</script>
+</body>
+</html>
